@@ -10,13 +10,13 @@ namespace CardCompiler
     public class Token
     {
         public TypeToken type;
-        public Location location;
+        //public Location location;
         public string value;
 
-        public Token(TypeToken type, Location location, string value)
+        public Token(TypeToken type, string value)
         {
             this.type = type;
-            this.location = location;
+           // this.location = location;
             this.value = value;
         }
         public override string ToString()
@@ -28,12 +28,10 @@ namespace CardCompiler
 
     public enum TypeToken
     {
-        Any,
         Error,
         Keyword,
-        Int,
+        Number,
         String,
-        Identifier,
         Symbol
     }
 

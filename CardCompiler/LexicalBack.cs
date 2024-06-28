@@ -51,27 +51,32 @@ namespace CardCompiler
             KeyWord[Key] = type;
         }
 
-        public void VerifyValidate(string Text)
+        public void VerifyValidate(string Text,List<Token> tokens)
         {
             if(CompareKeyword(Text))
             {
+                tokens.Add(new Token(TypeToken.Keyword,Text));
                 Console.WriteLine("{0} es una palabra clave", Text);
             }
             else if (CompareSymbol(Text))
             {
+                tokens.Add(new Token(TypeToken.Symbol, Text));
                 Console.WriteLine("{0} es un simbolo del sistema", Text);
             }
             else if (Regex.IsMatch(Text, @"^[a-zA-Z_][a-zA-Z0-9_]*$"))
             {
+                tokens.Add(new Token(TypeToken.String, Text));
                 Console.WriteLine("{0} es una palabra", Text);
             }
             else if (Regex.IsMatch(Text, @"^[0-9][0-9]+$"))
             {
+                tokens.Add(new Token(TypeToken.Number, Text));
                 Console.WriteLine("{0} es un numero", Text);
             }
             
             else
             {
+                tokens.Add(new Token(TypeToken.Error, Text));
                 Console.WriteLine("{0} sintax error", Text);
             }
             
@@ -80,38 +85,27 @@ namespace CardCompiler
 
         public bool CompareSymbol(string key)
         {
-            bool IsHere = false;
-            foreach(var word in Symbol.Keys)
+            foreach (var word in Symbol.Keys)
             {
-                if(key == word)
+                if (key == word)
                 {
-                    IsHere = true;
-                    break;
-                }
-                else
-                {
-                    IsHere = false;
+                    return true;
                 }
             }
-            return IsHere;
+            return false;
+
         }
 
         public bool CompareKeyword(string key)
         {
-            bool IsHere = false;
             foreach (var word in KeyWord.Keys)
             {
                 if (key == word)
                 {
-                    IsHere = true;
-                    break;
-                }
-                else
-                {
-                    IsHere = false;
+                    return true;                   
                 }
             }
-            return IsHere;
+            return false;
         }
     }
 }
