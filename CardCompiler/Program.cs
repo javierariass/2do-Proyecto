@@ -10,6 +10,7 @@ namespace CardCompiler
     {
         static void Main(string[] args)
         {
+
         }
     }
 }
