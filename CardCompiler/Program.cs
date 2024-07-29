@@ -10,7 +10,14 @@ namespace CardCompiler
     {
         static void Main(string[] args)
         {
-
+           
+            List<Token> tokens = new List<Token>();
+            SintaxBack process = new SintaxBack();
+            string lineas = "bool var = false;\n bool var2 = true;\nint a = 17;\nint b = 17.3;\ndouble var = 56.3;\n string Raza = 'Elfos negros 2'; \nstring Nombre = 'EL Diego'; \nstring Type= 'Oro'; "; 
+            Console.WriteLine(lineas + "\n\n");
+            process.VerifcateSintax(lineas);
+            
+         
         }
     }
 }
