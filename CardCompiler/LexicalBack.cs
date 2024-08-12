@@ -38,7 +38,8 @@ namespace CardCompiler
             AddSymbol("||", TokenValues.OrLogic);
             AddSymbol("&&", TokenValues.AndLogic);
 
-            AddKey("card", "Keyword");
+            AddKey("card", TokenValues.Card);
+            AddKey("effect", TokenValues.Effect);
         }
 
         public void AddSymbol(string Symb, string type)
@@ -51,33 +52,38 @@ namespace CardCompiler
             KeyWord[Key] = type;
         }
 
-        public void VerifyValidate(string Text,List<Token> tokens)
+        public TypeToken VerifyValidate(string Text)
         {
             if(CompareKeyword(Text))
             {
-                tokens.Add(new Token(TypeToken.Keyword,Text));
                 Console.WriteLine("{0} es una palabra clave", Text);
+                return TypeToken.Keyword;
             }
             else if (CompareSymbol(Text))
             {
-                tokens.Add(new Token(TypeToken.Symbol, Text));
-                Console.WriteLine("{0} es un simbolo del sistema", Text);
+                Console.WriteLine("{0} es un operador", Text);
+                return TypeToken.Symbol;
             }
-            else if (Regex.IsMatch(Text, @"^[a-zA-Z_][a-zA-Z0-9_]*$"))
+            else if (Regex.IsMatch(Text, @"^[\'][a-zA-Z' '0-9]*'"))
             {
-                tokens.Add(new Token(TypeToken.String, Text));
-                Console.WriteLine("{0} es una palabra", Text);
+                Console.WriteLine("{0} es un string", Text);
+                return TypeToken.String;
             }
-            else if (Regex.IsMatch(Text, @"^[0-9][0-9]+$"))
+            else if (Regex.IsMatch(Text, @"^[a-zA-Z][a-zA-Z0-9_]*$"))
             {
-                tokens.Add(new Token(TypeToken.Number, Text));
+                Console.WriteLine("{0} es una variable valida", Text);
+                return TypeToken.Var;
+            }
+            else if (Regex.IsMatch(Text, @"^-?\d+$"))
+            {
                 Console.WriteLine("{0} es un numero", Text);
+                return TypeToken.Number;
             }
             
             else
             {
-                tokens.Add(new Token(TypeToken.Error, Text));
                 Console.WriteLine("{0} sintax error", Text);
+                return TypeToken.Error;
             }
             
             

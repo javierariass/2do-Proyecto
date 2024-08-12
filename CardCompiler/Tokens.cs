@@ -32,7 +32,8 @@ namespace CardCompiler
         Keyword,
         Number,
         String,
-        Symbol
+        Symbol,
+        Var
     }
 
     public struct Location
@@ -74,6 +75,7 @@ namespace CardCompiler
         public const string OrLogic = "OrLogic"; // ||
         public const string AndLogic = "AndLogic"; // &&
 
-
+        public const string Card = "CardDefinition"; //card
+        public const string Effect = "EffectDefinition"; //effect
     }
 }

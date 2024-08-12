@@ -1,0 +1,10 @@
+C:\Users\Javier\Documents\Programacion\2do Proyecto\CardCompiler\obj\Debug\CardCompiler.csproj.AssemblyReference.cache
+C:\Users\Javier\Documents\Programacion\2do Proyecto\CardCompiler\obj\Debug\CardCompiler.csproj.SuggestedBindingRedirects.cache
+C:\Users\Javier\Documents\Programacion\2do Proyecto\CardCompiler\obj\Debug\CardCompiler.csproj.CoreCompileInputs.cache
+C:\Users\Javier\Documents\Programacion\2do Proyecto\CardCompiler\bin\Debug\CardCompiler.exe.config
+C:\Users\Javier\Documents\Programacion\2do Proyecto\CardCompiler\bin\Debug\CardCompiler.exe
+C:\Users\Javier\Documents\Programacion\2do Proyecto\CardCompiler\bin\Debug\CardCompiler.pdb
+C:\Users\Javier\Documents\Programacion\2do Proyecto\CardCompiler\obj\Debug\CardCompiler.exe
+C:\Users\Javier\Documents\Programacion\2do Proyecto\CardCompiler\obj\Debug\CardCompiler.pdb
+C:\Users\Javier\Documents\Programacion\2do Proyecto\CardCompiler\obj\Debug\CardCompiler.IDE.resources
+C:\Users\Javier\Documents\Programacion\2do Proyecto\CardCompiler\obj\Debug\CardCompiler.csproj.GenerateResource.cache
