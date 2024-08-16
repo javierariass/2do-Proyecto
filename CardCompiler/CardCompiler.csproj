@@ -48,6 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CardBack.cs" />
     <Compile Include="ErrorBack.cs" />
     <Compile Include="IDE.cs">
       <SubType>Form</SubType>

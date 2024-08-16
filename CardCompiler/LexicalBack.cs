@@ -11,6 +11,8 @@ namespace CardCompiler
     {
         Dictionary<string, string> Symbol = new Dictionary<string, string>();
         Dictionary<string, string> KeyWord = new Dictionary<string, string>();
+        List<CardType> cardType = new List<CardType>();
+        List<AttackType> attackType = new List<AttackType>();
 
         public LexicalProcess()
         {
@@ -37,6 +39,16 @@ namespace CardCompiler
             AddSymbol("@@", TokenValues.ConcatenSeparator);
             AddSymbol("||", TokenValues.OrLogic);
             AddSymbol("&&", TokenValues.AndLogic);
+
+            cardType.Add(CardType.Oro);
+            cardType.Add(CardType.Plata);
+            cardType.Add(CardType.Clima);
+            cardType.Add(CardType.Aumento);
+            cardType.Add(CardType.Lider);
+
+            attackType.Add(AttackType.Melee);
+            attackType.Add(AttackType.Ranged);
+            attackType.Add(AttackType.Asedio);
 
             AddKey("card", TokenValues.Card);
             AddKey("effect", TokenValues.Effect);
@@ -111,6 +123,32 @@ namespace CardCompiler
                     return true;                   
                 }
             }
+            return false;
+        }
+
+        public bool CompareCardType(string type)
+        {
+            foreach(CardType s in cardType)
+            {
+                if(s.ToString() == type)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public bool CompareAttackType(string type)
+        {
+            foreach (AttackType s in attackType)
+            {
+                if (s.ToString() == type)
+                {
+                    return true;
+                }
+            }
+
             return false;
         }
     }
