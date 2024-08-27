@@ -2,8 +2,11 @@ using CardCompiler;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using TMPro;
 using Unity.VisualScripting;
+using UnityEditor.Rendering.LookDev;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -15,11 +18,13 @@ public class GameManager : MonoBehaviour
     public Transform Pos1, Pos2;
     public Deck deck1, deck2;
     public Camera P1, P2;
-    public bool Invoke = false;
+    public bool invoke = false;
     public int Turn = 1;
     public TextMeshProUGUI P1Round,P2Round,P1Power,P2Power;
     public float Round1,Round2, RoundPower1,RoundPower2;
-
+    public GameObject[] Climas,Climas_Pos = new GameObject[3];
+    public bool Jug1_End, Jug2_End = false;
+    public Context context;
     // Start is called before the first frame update
     void Start()
     {
@@ -29,27 +34,30 @@ public class GameManager : MonoBehaviour
     private void Update()
     {
         PowerInCamp();
+        EndRound();
+        EndGame();
     }
 
+    //Funcion de Inicializar juego 
     private void StartGame()
     {
         string[] Players = File.ReadAllText(Application.dataPath + "/Resources/Setting/PlayerSetting.txt").Split('|');
 
-        LoadDeck(Players[0], Deck1, Pos1,deck1);
+        LoadDeck(Players[0], Deck1, Pos1,deck1,1);
         deck1.Mazo = new GameObject[Cards.Count];
         deck1.Mazo = Cards.ToArray();
-        deck1.Barajear();
+        deck1.Mazo = deck1.Barajear(deck1.Mazo);
         deck1.Robar(10);
         deck1.Leader = LeaderSelect;
         deck1.Leader.transform.position = deck1.Field_leader.transform.position;
         LeaderSelect = null;
         Cards.Clear();
 
-        LoadDeck(Players[1], Deck2, Pos2,deck2);
+        LoadDeck(Players[1], Deck2, Pos2,deck2,2);
         deck2.Mazo = new GameObject[Cards.Count];
         deck2.Mazo = Cards.ToArray();
         Cards.Clear();
-        deck2.Barajear();
+        deck2.Mazo = deck2.Barajear(deck2.Mazo);
         deck2.Robar(10);
         deck2.Leader = LeaderSelect;
         deck2.Leader = LeaderSelect;
@@ -58,7 +66,8 @@ public class GameManager : MonoBehaviour
         LeaderSelect = null;
     }
 
-    private void LoadDeck(string decks,GameObject deckPos,Transform positions, Deck player)
+    //Funcion para cargar decks
+    private void LoadDeck(string decks,GameObject deckPos,Transform positions, Deck player,int TriggerPlayer)
     {
         datos = File.ReadAllText(Application.dataPath + "/Resources/Decks/" + decks + ".txt");
         LexicalProcess process = new();
@@ -80,9 +89,14 @@ public class GameManager : MonoBehaviour
             {
                 deck[3] = "0";
             }
-            Card card = new Card(deck[0], process.CompareCardType(deck[1]), deck[2], int.Parse(deck[3]), attack);
+            Card card = new(deck[0], process.CompareCardType(deck[1]), deck[2], int.Parse(deck[3]), attack,TriggerPlayer);
+            if(deck.Length == 6)
+            {
+                string[] effec = File.ReadAllText(Application.dataPath + "/Resources/Effects/" + deck[5] + ".txt").Split('*');
+                card.effect = new effect(effec[0], effec[1].Split('-').ToList(), effec[2].Split('-').ToList());
+            }
             gameObject.AddComponent<GeneralCard>();
-            gameObject.GetComponent<GeneralCard>().Create(card,player);
+            gameObject.GetComponent<GeneralCard>().Create(card,player,TriggerPlayer);
             gameObject.transform.parent = deckPos.transform;
             gameObject.transform.position = positions.position;
             if(card.Type == CardType.Lider)
@@ -96,28 +110,106 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    //Funcion para cambiar turno
     public void ChangeTurn()
     {
+        bool cam_Change = false;
+        if (!invoke && Turn == 1)
+        {
+            Jug1_End = true;
+        }
+        if (!invoke && Turn == 2)
+        {
+            Jug2_End = true;
+        }
         TextMeshProUGUI text;
-        if(P1.isActiveAndEnabled)
+        if(P1.isActiveAndEnabled && !Jug2_End)
         {
             P1.gameObject.SetActive(false);
-            P2.gameObject.SetActive(true);           
+            P2.gameObject.SetActive(true);
+            cam_Change = true;
             Turn = 2;
+            for(int i=0;i<Climas_Pos.Length;i++)
+            {
+                Climas_Pos[i].GetComponent<Casilla_Invocacion>().player = 2;
+                Climas_Pos[i].GetComponent<Casilla_Invocacion>().Deck = deck2;
+            }          
         }
-        else
+        else if(P2.isActiveAndEnabled && !Jug1_End)
         {
 
             P2.gameObject.SetActive(false);
             P1.gameObject.SetActive(true);
+            cam_Change = true;
             Turn = 1;
+            for (int i = 0; i < Climas_Pos.Length; i++)
+            {
+                Climas_Pos[i].GetComponent<Casilla_Invocacion>().player = 1;
+                Climas_Pos[i].GetComponent<Casilla_Invocacion>().Deck = deck1;
+            }
         }
-        text = P1Power;
-        P1Power = P2Power;
-        P2Power = text;
-        Invoke = false;
+
+        if(cam_Change)
+        {
+            text = P1Power;
+            P1Power = P2Power;
+            P2Power = text;
+
+        }
+        if (!Jug1_End || !Jug2_End)
+        {
+            invoke = false;
+        }
+        
     }
 
+    //Funcion para verificar fin de rondas
+    public void EndRound()
+    {
+        if (Jug1_End && Jug2_End)
+        {
+            if (RoundPower1 > RoundPower2)
+            {
+                Round1++;
+            }
+            else if (RoundPower1 < RoundPower2)
+            {
+                Round2++;
+            }
+            else
+            {
+                Round2++;
+                Round1++;
+            }
+            P1Round.text = "P1: " + Round1;
+            P2Round.text = "P2: " + Round2;
+            Jug1_End = false;
+            Jug2_End = false;
+            for(int i = 0; i < Climas_Pos.Length; i++)
+            {
+                Destroy(Climas[i]);
+                Climas[i] = null;
+            }
+
+            for(int i = 0; i < deck1.Field.Length; i++)
+            {
+                Destroy(deck1.Field[i]);
+                deck1.Field[i] = null;
+                Destroy(deck2.Field[i]);
+                deck2.Field[i] = null;
+            }
+
+            for (int i = 0; i < deck1.Aum.Length; i++)
+            {
+                Destroy(deck1.Aum[i]);
+                deck1.Aum[i] = null;
+                Destroy(deck2.Aum[i]);
+                deck2.Aum[i] = null;
+            }
+        }
+    }
+
+    //Funcion para verificar poder en el campo
     public void PowerInCamp()
     {
         float i = 0;
@@ -139,4 +231,83 @@ public class GameManager : MonoBehaviour
         P1Power.text = "Poder: " + RoundPower1;
         P2Power.text = "Poder: " + RoundPower2;
     }
+
+    //Funcion para ver fin del juego
+    public void EndGame()
+    {
+        if(Round1 == 2 && Round2 < 2)
+        {
+            //Gana jugador 1
+        }
+
+        if (Round1 < 2 && Round2 == 2)
+        {
+            //Gana jugador 2
+        }
+
+        if (Round1 == 2 && Round2 == 2)
+        {
+            //Empate
+        }
+    }
+
+    
+    public void DeterminateContext()
+    {
+        context.Board.Clear();
+        context.HandOfPlayer_1.Clear();
+        context.FieldOfPlayer_1.Clear();
+        context.GraveyardOfPlayer_1.Clear();
+        context.DeckOfPlayer_1.Clear();
+        context.HandOfPlayer_2.Clear();
+        context.FieldOfPlayer_2.Clear();
+        context.GraveyardOfPlayer_2.Clear();
+        context.DeckOfPlayer_2.Clear();
+
+        //Cartas en la mano de cada jugador;
+        for (int i = 0; i < 10; i++)
+        {
+            if (deck1.Hand[i] != null)
+            {
+                context.HandOfPlayer_1.Add(deck1.Hand[i].GetComponent<GeneralCard>());
+            }
+            if (deck2.Hand[i] != null)
+            {
+                context.HandOfPlayer_2.Add(deck2.Hand[i].GetComponent<GeneralCard>());
+            }
+        }
+
+        //Cartas del campo
+        for (int i = 0; i < 12; i++)
+        {
+            if (deck1.Field[i] != null)
+            {
+                context.Board.Add(deck1.Field[i].GetComponent<GeneralCard>());
+            }
+            if (deck2.Field[i] != null)
+            {
+                context.Board.Add(deck2.Field[i].GetComponent<GeneralCard>());
+            }
+        }
+
+        //Cartas del deck1
+        for(int i = 0; i < deck1.Mazo.Length;i++)
+        {
+            if (deck1.Mazo[i] != null)
+            {
+                context.DeckOfPlayer_1.Add(deck1.Mazo[i].GetComponent<GeneralCard>());
+            }
+        }
+
+        //Cartas del deck2
+        for (int i = 0; i < deck2.Mazo.Length; i++)
+        {
+            if (deck2.Mazo[i] != null)
+            {
+                context.DeckOfPlayer_2.Add(deck2.Mazo[i].GetComponent<GeneralCard>());
+            }
+        }
+    }
 }
+
+

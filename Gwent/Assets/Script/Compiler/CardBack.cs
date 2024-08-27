@@ -13,13 +13,16 @@ namespace CardCompiler
         public string Faction;
         public int Power;
         public List<AttackType> AttackType;
-        public Card(string name, CardType type, string faction, int power,List<AttackType> attackType)
+        public int TriggerPlayer;
+        public effect effect;
+        public Card(string name, CardType type, string faction, int power,List<AttackType> attackType,int trigerPlayer)
         {
             Name = name;
             Type = type;
             Faction = faction;
             Power = power;
             AttackType = attackType;
+            TriggerPlayer = trigerPlayer;
         }
     }
     public enum AttackType

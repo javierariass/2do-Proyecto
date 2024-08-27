@@ -8,8 +8,11 @@ public class Deck : MonoBehaviour
     public GameObject[] Mazo;
     public GameObject[] Hand_Pos = new GameObject[10];
     public GameObject[] Field_Pos = new GameObject[12];
+    public GameObject[] Aum_Pos = new GameObject[3];
+    public GameObject[] Aum = new GameObject[3];
     public GameObject[] Hand = new GameObject[10];
     public GameObject[] Field = new GameObject[12];
+    public GameObject[] Graveyard = new GameObject[50];
     public GameObject Field_leader;
     public GameObject Card_Invoke;
     public GameObject Leader;
@@ -18,7 +21,7 @@ public class Deck : MonoBehaviour
 
 
     //Funcion barajear deck
-    public void Barajear()
+    public GameObject[] Barajear(GameObject[] Mazo)
     {
         GameObject card;
 
@@ -29,6 +32,7 @@ public class Deck : MonoBehaviour
             Mazo[i] = Mazo[d];
             Mazo[d] = card;
         }
+        return Mazo;
     }
 
     //Robar carta del mazo
@@ -41,7 +45,8 @@ public class Deck : MonoBehaviour
             if (Hand[i] == null)
             {
                 Hand[i] = Mazo[carta_actual_deck];
-                Hand[i].transform.SetPositionAndRotation(Hand_Pos[i].transform.position, Hand_Pos[i].transform.rotation);
+                HandPosition(i);
+                Mazo[carta_actual_deck] = null;
                 carta_actual_deck++;
                 j += 1;
             }
@@ -52,6 +57,11 @@ public class Deck : MonoBehaviour
                 break;
             }
         }
+    }
+
+    public void HandPosition(int i)
+    {
+        Hand[i].transform.SetPositionAndRotation(Hand_Pos[i].transform.position, Hand_Pos[i].transform.rotation);
     }
 
     //Selecionar para invocar

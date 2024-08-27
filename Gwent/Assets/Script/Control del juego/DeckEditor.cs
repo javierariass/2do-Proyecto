@@ -24,7 +24,10 @@ public class DeckEditor : MonoBehaviour
         List<TMP_Dropdown.OptionData> Options = new();
         foreach(string Deck in Decks)
         {
-            Options.Add(new TMP_Dropdown.OptionData(Deck));
+            if(File.ReadAllText(Application.dataPath + "/Resources/Decks/" + Deck + ".txt").Split(';').Length >24)
+            {
+                Options.Add(new TMP_Dropdown.OptionData(Deck));
+            }         
         }
         player1.AddOptions(Options);
         player2.AddOptions(Options);

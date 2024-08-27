@@ -391,6 +391,8 @@
 -r:"Library/Bee/artifacts/1900b0aE.dag/UnityEngine.UI.ref.dll"
 "Assets/Script/Card/GeneralCard.cs"
 "Assets/Script/Compiler/CardBack.cs"
+"Assets/Script/Compiler/Context.cs"
+"Assets/Script/Compiler/EffectBack.cs"
 "Assets/Script/Compiler/ErrorBack.cs"
 "Assets/Script/Compiler/LexicalBack.cs"
 "Assets/Script/Compiler/SintaxBack.cs"
