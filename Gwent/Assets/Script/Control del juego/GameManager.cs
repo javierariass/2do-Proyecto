@@ -71,7 +71,7 @@ public class GameManager : MonoBehaviour
     {
         datos = File.ReadAllText(Application.dataPath + "/Resources/Decks/" + decks + ".txt");
         LexicalProcess process = new();
-        string[] cartas = datos.Split(';');
+        string[] cartas = datos.Split('\n');
         foreach (string cart in cartas)
         {
             string[] deck = cart.Split('|');
@@ -90,9 +90,9 @@ public class GameManager : MonoBehaviour
                 deck[3] = "0";
             }
             Card card = new(deck[0], process.CompareCardType(deck[1]), deck[2], int.Parse(deck[3]), attack,TriggerPlayer);
-            if(deck.Length == 6)
+            if(deck.Length == 6 && File.Exists(Application.dataPath + "/Resources/Effects/" + deck[5].Split('*')[0] + ".txt"))
             {
-                string[] effec = File.ReadAllText(Application.dataPath + "/Resources/Effects/" + deck[5] + ".txt").Split('*');
+                string[] effec = File.ReadAllText(Application.dataPath + "/Resources/Effects/" + deck[5].Split('*')[0] + ".txt").Split('*');
                 card.effect = new effect(effec[0], effec[1].Split('-').ToList(), effec[2].Split('-').ToList());
             }
             gameObject.AddComponent<GeneralCard>();

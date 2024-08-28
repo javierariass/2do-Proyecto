@@ -25,10 +25,10 @@ public class Context : MonoBehaviour
         GameManager.DeterminateContext();
         Dictionary<string, GeneralCard> ParamEffect = new();
         string[] partes;
+        string[] mazo;
         foreach (string instrucion in Effect.Instruntions)
         {
             partes = instrucion.Split('|');
-            
             switch (partes[0])
             {
                 case "Pop":
@@ -83,7 +83,7 @@ public class Context : MonoBehaviour
                         {
                             ParamEffect[partes[1]] = DeckOfPlayer_2[0];
                             DeckOfPlayer_2.RemoveAt(0);
-                            for (int i = 0; i < GameManager.deck1.Mazo.Length; i++)
+                            for (int i = 0; i < GameManager.deck2.Mazo.Length; i++)
                             {
                                 GameManager.deck2.Mazo[i] = null;
                             }
@@ -112,7 +112,7 @@ public class Context : MonoBehaviour
                         {
                             ParamEffect[partes[1]] = GraveyardOfPlayer_2[0];
                             GraveyardOfPlayer_2.RemoveAt(0);
-                            for (int i = 0; i < GameManager.deck1.Graveyard.Length; i++)
+                            for (int i = 0; i < GameManager.deck2.Graveyard.Length; i++)
                             {
                                 GameManager.deck2.Graveyard[i] = null;
                             }

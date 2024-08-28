@@ -51,7 +51,14 @@ public class GeneralCard : MonoBehaviour
         gameObject.AddComponent<SpriteRenderer>();
         gameObject.AddComponent<BoxCollider2D>();
 
-        gameObject.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("Images/" + Name);
+        if(File.Exists(Application.dataPath + "/Resources/Images/" + Name + ".jpg"))
+        {
+            gameObject.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("Images/" + Name);
+        }
+        else
+        {
+            gameObject.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("Images/Random");
+        }
         gameObject.GetComponent<BoxCollider2D>().isTrigger = true;
         gameObject.GetComponent<BoxCollider2D>().size = new Vector2(9.63649f, 12.67119f);
     }

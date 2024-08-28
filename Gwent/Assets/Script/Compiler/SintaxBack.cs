@@ -625,29 +625,34 @@ namespace CardCompiler
             string Faction = " ";
             string Power = " ";
             string Range = " ";
-            int EndLine = Nline + 5;
-
-            if ((EndLine <= Code.Length))
+            string onActivation = "*";
+            if (FindEndExpression(Code[Nline - 1], '{'))
             {
-                if (Find(Code[Nline - 1], "{") && FindEndExpression(Code[Nline - 1], '{'))
+                while (Code[Nline - 1] != "}")
                 {
-                    EndLine--;
-                    while (Nline < Code.Length - 1)
+                    if (Nline + 1 < Code.Length)
                     {
                         Nline++;
-                        Code[Nline - 1] = EliminateSpace(Code[Nline - 1]);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                    Code[Nline - 1] = EliminateSpace(Code[Nline - 1]);
+                    if (Code[Nline - 1] != "")
+                    {
                         string Definition = VerificateCard(Code[Nline - 1], Nline);
 
                         if (Definition != " ")
                         {
                             string[] var = Definition.Split('-');
-                            
+
                             //Verificar variable Name
                             if (var[0] == "Name" && Name == " ")
                             {
                                 Name = var[1];
                             }
-                            
+
                             //Verificar variable Faction
                             else if (var[0] == "Faction" && Faction == " ")
                             {
@@ -675,12 +680,23 @@ namespace CardCompiler
                                 }
                             }
 
+                            //Verificar definicion OnActivation
                             else if (Definition == "OnActivation")
                             {
-                                string onActivation = VerificateOnActivation(Code,Nline);
-                                if(onActivation != " ")
+                                if (EliminateSpace(Code[Nline]) == "{")
                                 {
-                                    EndLine += onActivation.Split('*').Length;
+                                    Nline++;
+                                    onActivation = VerificateOnActivation(Code, Nline);
+                                    if (onActivation != " ")
+                                    {
+                                        string[] on = onActivation.Split('*');
+                                        int linesAdd = on[1].Split('.').Length + 9;
+                                        Nline += linesAdd;
+                                    }
+                                }
+                                else
+                                {
+                                    error.Add(new ErrorBack(Nline, "Definicion onactivacion missing {"));
                                 }
                             }
 
@@ -689,13 +705,6 @@ namespace CardCompiler
                             {
                                 error.Add(new ErrorBack(Nline, ErrorValue.SintaxErrorIncorrectStatament));
                             }
-
-                            EndLine--;
-
-                            if (EndLine == 0)
-                            {
-                                break;
-                            }
                         }
                         else
                         {
@@ -703,42 +712,43 @@ namespace CardCompiler
                             return;
                         }
                     }
-                    if (Code[Nline] != "}")
-                    {
-                        error.Add(new ErrorBack(Nline, ErrorValue.SintaxErrorClosedCurlyBraces));
-                    }
-
-                    if (Type != " " && Name != " " && Faction != " " && Power != " " && Range != " ")
-                    {
-                        //Crea una carta
-                        Range = EliminateSpace(Range);
-                        string card = (Name + "|" + Type + "|" + Faction + "|" + Power + "|" + Range);
-                        string decksito;
-                        string decks = File.ReadAllText(Application.dataPath + "/Resources/Setting/DeckInGame.txt");
-                        if (File.Exists(Application.dataPath + "/Resources/Decks/" + Faction + ".txt"))
-                        {
-                            decksito = File.ReadAllText(Application.dataPath + "/Resources/Decks/" + Faction + ".txt");
-                            decksito += ";" + card;
-                            SaveCard(Faction, decksito, decks);
-                        }
-                        else
-                        {
-                            SaveCard(Faction, card, decks);
-                        }
-                    }
+                }
+                if (Code[Nline] != "}")
+                {
+                    error.Add(new ErrorBack(Nline, ErrorValue.SintaxErrorClosedCurlyBraces));
                 }
 
+                //Crea una carta
+                if (Type != " " && Name != " " && Faction != " " && Power != " " && Range != " " && error.Count == 0)
+                {
+                    Range = EliminateSpace(Range);
+                    string card = (Name + "|" + Type + "|" + Faction + "|" + Power + "|" + Range + "|" + onActivation);
+                    string decksito;
+                    string decks = File.ReadAllText(Application.dataPath + "/Resources/Setting/DeckInGame.txt");
+                    if (File.Exists(Application.dataPath + "/Resources/Decks/" + Faction + ".txt"))
+                    {
+                        decksito = File.ReadAllText(Application.dataPath + "/Resources/Decks/" + Faction + ".txt");
+                        decksito += "\n" + card;
+                        SaveCard(Faction, decksito, decks);
+                    }
+                    else
+                    {
+                        SaveCard(Faction, card, decks);
+                    }
+                }
                 else
                 {
-                    error.Add(new ErrorBack(Nline, ErrorValue.SintaxErrorOpenCurlyBraces));
+                    error.Add(new ErrorBack(Nline, ErrorValue.SintaxErrorDeclaration));
                 }
             }
+
             else
             {
-                error.Add(new ErrorBack(Nline, ErrorValue.SintaxErrorDeclaration));
+                error.Add(new ErrorBack(Nline, ErrorValue.SintaxErrorOpenCurlyBraces));
+
             }
         }
-
+        
         //Metodo para verificar parametros de carta
         private string VerificateCard(string Code, int Nline)
         {
@@ -840,7 +850,7 @@ namespace CardCompiler
 
                         if (process.VerifyValidate(sintax[1]) == TypeToken.String)
                         {
-                            sintax[1] = CreateString(sintax[1], 0);
+                            sintax[1] = CreateString(sintax[1], Nline);
                         }
 
                         if (sintax[1] != " " && Find(Code, "Name"))
@@ -868,7 +878,7 @@ namespace CardCompiler
                         }
                         if (process.VerifyValidate(sintax[1]) == TypeToken.String)
                         {
-                            sintax[1] = CreateString(sintax[1], 0);
+                            sintax[1] = CreateString(sintax[1], Nline);
                         }
                         if (process.CompareCardType(sintax[1]) != CardType.None)
                         {
@@ -901,22 +911,20 @@ namespace CardCompiler
                             error.Add(new ErrorBack(Nline, ErrorValue.SintaxErrorUndefined));
                             return " ";
                         }
-                    }
-
-                    //Verificacion declaracion Power
-                    if (Regex.IsMatch(Code, @"^OnActivation|<#definition\s+['{']*;$") && FindEndExpression(Code,'['))
+                    }                   
+                }
+            }
+            //Verificacion onActivation
+            else if(FindEndExpression(Code,'['))
+            {
+                //Verificacion declaracion Power
+                if (Regex.IsMatch(Code, @"^OnActivation|<#definition\s+['{']*;$"))
+                {
+                    if (Find(Code, ":"))
                     {
-                        if(Find(Code,":"))
+                        if (Code.Split(':').Length == 2)
                         {
-                            if(Code.Split(':').Length == 3)
-                            {
-                                return "OnActivation";
-                            }
-                            else
-                            {
-                                error.Add(new ErrorBack(Nline, ErrorValue.SintaxErrorUndefined));
-                                return " ";
-                            }
+                            return "OnActivation";
                         }
                         else
                         {
@@ -924,19 +932,17 @@ namespace CardCompiler
                             return " ";
                         }
                     }
-                }
-
-                else
-                {
-                    error.Add(new ErrorBack(Nline, ErrorValue.SintaxErrorAssignStatament));
-                    return " ";
+                    else
+                    {
+                        error.Add(new ErrorBack(Nline, ErrorValue.SintaxErrorUndefined));
+                        return " ";
+                    }
                 }
             }
 
             else
             {
-                error.Add(new ErrorBack(Nline, ErrorValue.SintaxErrorEndStatament));
-                return " ";
+                error.Add(new ErrorBack(Nline, ErrorValue.SintaxErrorAssignStatament));
             }
             return " ";
         }
@@ -944,6 +950,163 @@ namespace CardCompiler
         //Metodo para verificar OnActivation
         private string VerificateOnActivation(string[] Code, int Nline)
         {
+            bool cierre = false;
+            string[] OnActive = new string[3];
+
+            //Nombre del efecto
+            if (Regex.IsMatch(Code[Nline], @"^Effect|<#definition\s+['{']*;$") && Find(Code[Nline], ":") && FindEndExpression(Code[Nline], '{'))
+            {
+                while (EliminateSpace(Code[Nline]) != "}" && !Regex.IsMatch(Code[Nline], @"^Selector|<#definition\s+['{']*;$"))
+                {
+                    Nline++;
+                    //Encontrando nombres
+                    if (Regex.IsMatch(Code[Nline], @"^Name|<#definition\s+['{']*;$"))
+                    {
+                        if (Find(Code[Nline], ":") && FindEndExpression(Code[Nline], ','))
+                        {
+                            string[] sintax = Code[Nline].Split(':', ',');
+                            sintax[1] = EliminateSpace(sintax[1]);
+                            if (process.VerifyValidate(sintax[1]) == TypeToken.Var)
+                            {
+                                sintax[1] = VarValue(VarString, sintax[1]);
+                            }
+
+                            if (process.VerifyValidate(sintax[1]) == TypeToken.String)
+                            {
+                                sintax[1] = CreateString(sintax[1], Nline);
+                            }
+
+                            if (sintax[1] != " ")
+                            {
+                                if (File.Exists(Application.dataPath + "/Resources/Effects/" + sintax[1] + ".txt"))
+                                {
+                                    OnActive[0] = sintax[1];
+                                    
+                                }
+                            }
+                        }
+                    }
+
+                    //Encontrando Parametros
+                    if (Find(Code[Nline], ":") && Find(Code[Nline], ",") && !Regex.IsMatch(Code[Nline], @"^Name|<#definition\s+['{']*;$"))
+                    {
+                        string[] param = Code[Nline].Split(':', ',');
+                        param[1] = EliminateSpace(param[1]);
+                        param[0] = EliminateSpace(param[0]);
+                        if (process.VerifyValidate(param[0]) == TypeToken.Var)
+                        {
+                            OnActive[1] += param[0] + ":" + param[1] + ".";
+                        }
+                    }
+                }
+                if (EliminateSpace(Code[Nline]) == "}") cierre = true;
+            }
+            Nline++;
+
+            //Selector
+            if(cierre)
+            {
+                cierre = false;
+                if (Regex.IsMatch(Code[Nline], @"^Selector|<#definition\s+['{']*;$") && Find(Code[Nline], ":") && FindEndExpression(Code[Nline], '{'))
+                {
+                    string source = "";
+                    string single = "false";
+                    string predicate = "";
+                    int i = 0;
+                    Nline++;
+                    while (i < 3)
+                    {
+                        if (Regex.IsMatch(Code[Nline], @"^Source|<#definition\s+['{']*;$"))
+                        {
+                            if (Find(Code[Nline], ":") && FindEndExpression(Code[Nline], ','))
+                            {
+                                string[] sintax = Code[Nline].Split(':', ',');
+                                sintax[1] = EliminateSpace(sintax[1]);
+                                if (process.VerifyValidate(sintax[1]) == TypeToken.Var)
+                                {
+                                    sintax[1] = VarValue(VarString, sintax[1]);
+                                }
+
+                                if (process.VerifyValidate(sintax[1]) == TypeToken.String)
+                                {
+                                    sintax[1] = CreateString(sintax[1], Nline);
+                                }
+
+                                sintax[1] = process.CompareSourceType(sintax[1]);
+                                if (sintax[1] != " ")
+                                {
+                                    source = sintax[1];
+                                }
+                                else
+                                {
+                                    error.Add(new ErrorBack(Nline, ErrorValue.SintaxErrorIncorrectStatament));
+                                }
+                            }
+                        }
+                        if (Regex.IsMatch(Code[Nline], @"^Single|<#definition\s+['{']*;$"))
+                        {
+                            if (Find(Code[Nline], ":") && FindEndExpression(Code[Nline], ','))
+                            {
+                                string[] sintax = Code[Nline].Split(':', ',');
+                                sintax[1] = EliminateSpace(sintax[1]);
+                                if (process.VerifyValidate(sintax[1]) == TypeToken.Var)
+                                {
+                                    sintax[1] = VarValue(VarString, sintax[1]);
+                                }
+                                sintax[1] = EliminateSpace(sintax[1]);
+                                if (sintax[1] == "false" || sintax[1] == "true")
+                                {
+                                    single = sintax[1];
+                                }
+                            }
+                        }
+                        if (Regex.IsMatch(Code[Nline], @"^Predicate|<#definition\s+['{']*;$"))
+                        {
+                            if (Find(Code[Nline], ":") && FindEndExpression(Code[Nline], ','))
+                            {
+                                string[] sintax = Code[Nline].Split(':', ',');
+                                sintax[1] = EliminateSpace(sintax[1]);
+                                if (Find(sintax[1], "(") && Find(sintax[1], ")"))
+                                {
+                                    string[] unit = sintax[1].Split('(', ')');
+                                    if (EliminateSpace(unit[1]) == "unit" && Find(sintax[1], "=>") && Find(sintax[1], "unit."))
+                                    {
+                                        predicate = sintax[1].Split('.')[1];
+                                    }
+                                }
+                            }
+                        }
+
+                        i++;
+                        Nline++;
+                    }
+                    if (source != "" && predicate != "")
+                    {
+                        OnActive[2] = source + "." + single + "." + predicate;
+                    }
+                }
+
+            }
+            else
+            {
+                error.Add(new ErrorBack(Nline, ErrorValue.SintaxErrorDeclaration));
+            }
+
+            if (EliminateSpace(Code[Nline]) == "}" && EliminateSpace(Code[Nline + 1]) == "}" && EliminateSpace(Code[Nline + 2]) == "]")
+            {
+                //Creando respuesta
+
+                if (OnActive[0] != null && OnActive[2] != null)
+                {
+                    string code = OnActive[0] + "*" + OnActive[1] + "*" + OnActive[2];
+                    return code;
+                }
+
+            }
+            else
+            {
+                error.Add(new ErrorBack(Nline + 1, ErrorValue.SintaxErrorDeclaration));
+            }
             return " ";
         }
 
@@ -951,10 +1114,9 @@ namespace CardCompiler
         private void SaveCard(string Faction, string decksito, string decks)
         {
             StreamWriter sw = new(Application.dataPath + "/Resources/Decks/" + Faction + ".txt");
-
-            StreamWriter sw2 = new(Application.dataPath + "/Resources/Setting/DeckInGame.txt");
             if (!Find(decks, Faction))
             {
+                StreamWriter sw2 = new(Application.dataPath + "/Resources/Setting/DeckInGame.txt");
                 decks += "-" + Faction;
                 sw2.Write(decks);
                 sw2.Close();

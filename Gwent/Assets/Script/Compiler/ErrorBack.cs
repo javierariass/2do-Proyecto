@@ -35,10 +35,3 @@ public class ErrorValue
     public const string SintaxErrorIncorrectStatament = "Invalid Sintax. Property does not exist or has already been used";
 }
 
-
-/*card {
-Name: 'Diego',
-Type: 'Oro',
-Faction: 'Matcom',
-Power: 100,
-Range: ['Melee','Asedio','Ranged'],*/
