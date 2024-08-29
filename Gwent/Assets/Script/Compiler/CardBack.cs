@@ -17,7 +17,7 @@ namespace CardCompiler
         public effect effect;
         public Card(string name, CardType type, string faction, int power,List<AttackType> attackType,int trigerPlayer)
         {
-            Name = name;
+            Name = name;                   
             Type = type;
             Faction = faction;
             Power = power;
@@ -25,22 +25,5 @@ namespace CardCompiler
             TriggerPlayer = trigerPlayer;
         }
     }
-    public enum AttackType
-    {
-        Melee,
-        Ranged,
-        Asedio,
-        None
-    }
-    public enum CardType
-    {
-        Oro,
-        Plata,
-        Clima,
-        Aumento,
-        Lider,
-        Despeje,
-        Lure,
-        None
-    }
+    
 }

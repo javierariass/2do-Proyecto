@@ -64,7 +64,6 @@
     <Compile Include="Assets\Script\Compiler\Context.cs" />
     <Compile Include="Assets\Script\Card\GeneralCard.cs" />
     <Compile Include="Assets\Script\Compiler\ErrorBack.cs" />
-    <Compile Include="Assets\Script\Compiler\Tokens.cs" />
     <Compile Include="Assets\Script\Juego\Deck.cs" />
     <Compile Include="Assets\Script\Compiler\CardBack.cs" />
     <Compile Include="Assets\Script\Compiler\EffectBack.cs" />

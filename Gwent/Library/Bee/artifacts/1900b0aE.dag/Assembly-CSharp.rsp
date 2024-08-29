@@ -396,7 +396,6 @@
 "Assets/Script/Compiler/ErrorBack.cs"
 "Assets/Script/Compiler/LexicalBack.cs"
 "Assets/Script/Compiler/SintaxBack.cs"
-"Assets/Script/Compiler/Tokens.cs"
 "Assets/Script/CompilerUnityActivity.cs"
 "Assets/Script/Control del juego/DeckEditor.cs"
 "Assets/Script/Control del juego/GameManager.cs"

@@ -28,6 +28,8 @@ public class ErrorValue
     public const string SintaxErrorAssignStatament = "Invalid Sintax. Missing operator: :";
     public const string SintaxErrorOpenCurlyBraces = "Invalid Sintax. Missing operator: {";
     public const string SintaxErrorClosedCurlyBraces = "Invalid Sintax. Missing operator: }";
+    public const string SintaxErrorOpenBracketsBraces = "Invalid Sintax. Missing operator: [";
+    public const string SintaxErrorClosedBracketsBraces = "Invalid Sintax. Missing operator: ]";
     public const string SintaxErrorValue = "Invalid Sintax. Incorrect value type";
     public const string SintaxErrorValueZero = "Invalid Sintax. division by 0 invalid";
     public const string SintaxErrorDeclaration = "Invalid Declaration";

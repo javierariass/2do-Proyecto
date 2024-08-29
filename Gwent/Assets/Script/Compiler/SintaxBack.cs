@@ -20,7 +20,7 @@ namespace CardCompiler
         public Dictionary<string, string> VarBoolean = new();
         public List<ErrorBack> error = new();
         public List<string> TextImpress = new();
-        LexicalProcess process = new();
+        readonly LexicalProcess process = new();
 
         //Funcion principal encargada de la revision de la sintaxis
         public void VerifcateSintax(string Code)
@@ -67,7 +67,7 @@ namespace CardCompiler
                     EffectCreate(Lines, NLine);
                 }
 
-                //Metodo para imprimir en pantalla por aburrimiento
+                //Metodo para imprimir en pantalla
                 if (Find(Line, "Write") && Find(Line, "(") && FindEndExpression(Line, ';'))
                 {
                     string[] impresion = Line.Split('(', ')');
@@ -242,7 +242,7 @@ namespace CardCompiler
             }
         }
 
-        //Metodo para verificar ; al final
+        //Metodo para verificar fnal de linea
         private bool FindEndExpression(string Code, char end)
         {
             if (Code[^1] == end)
@@ -265,8 +265,7 @@ namespace CardCompiler
         //Metodo para encontrar un operador doble en una linea
 
         //Metodo para eliminar espacios en blanco al principio de la linea
-        public string EliminateSpace(string Code)
-        {
+        public string EliminateSpace(string Code)        {
             bool inicia = false;
             string code = "";
             int i = 0;
@@ -1092,20 +1091,26 @@ namespace CardCompiler
                 error.Add(new ErrorBack(Nline, ErrorValue.SintaxErrorDeclaration));
             }
 
-            if (EliminateSpace(Code[Nline]) == "}" && EliminateSpace(Code[Nline + 1]) == "}" && EliminateSpace(Code[Nline + 2]) == "]")
+
+            //Creando respuesta de OnActivation
+            if (EliminateSpace(Code[Nline]) == "}" && EliminateSpace(Code[Nline + 1]) == "}")
             {
-                //Creando respuesta
-
-                if (OnActive[0] != null && OnActive[2] != null)
+                if(EliminateSpace(Code[Nline + 2]) == "]")
                 {
-                    string code = OnActive[0] + "*" + OnActive[1] + "*" + OnActive[2];
-                    return code;
+                    if (OnActive[0] != null && OnActive[2] != null)
+                    {
+                        string code = OnActive[0] + "*" + OnActive[1] + "*" + OnActive[2];
+                        return code;
+                    }
                 }
-
+                else
+                {
+                    error.Add(new ErrorBack(Nline + 2, ErrorValue.SintaxErrorClosedBracketsBraces));
+                }
             }
             else
             {
-                error.Add(new ErrorBack(Nline + 1, ErrorValue.SintaxErrorDeclaration));
+                error.Add(new ErrorBack(Nline + 1, ErrorValue.SintaxErrorClosedCurlyBraces));
             }
             return " ";
         }

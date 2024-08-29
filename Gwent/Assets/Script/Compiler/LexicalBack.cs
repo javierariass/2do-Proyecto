@@ -11,8 +11,9 @@ namespace CardCompiler
     {
         List<CardType> cardType = new();
         List<AttackType> attackType = new();
-        List<string> Source = new();
+        List<SourceType> Source = new();
 
+        //Constructor con parametro predefinidos
         public LexicalProcess()
         {
 
@@ -26,59 +27,56 @@ namespace CardCompiler
 
             attackType.Add(AttackType.Melee);
             attackType.Add(AttackType.Ranged);
-            attackType.Add(AttackType.Asedio);
+            attackType.Add(AttackType.Siege);
 
-            Source.Add("hand");
-            Source.Add("otherhand");
-            Source.Add("field");
-            Source.Add("otherfield");
-            Source.Add("deck");
-            Source.Add("otherdeck");
-            Source.Add("board");
+            Source.Add(SourceType.hand);
+            Source.Add(SourceType.otherhand);
+            Source.Add(SourceType.field);
+            Source.Add(SourceType.otherfield);
+            Source.Add(SourceType.deck);
+            Source.Add(SourceType.otherdeck);
+            Source.Add(SourceType.board);
 
         }
 
-
+        //Revision de token valido
         public TypeToken VerifyValidate(string Text)
         {
             if (Regex.IsMatch(Text, @"^[\'][a-zA-Z' '0-9]*'"))
             {
-                Console.WriteLine("{0} es un string", Text);
                 return TypeToken.String;
             }
             else if (Regex.IsMatch(Text, @"^[a-zA-Z][a-zA-Z0-9_]*$"))
             {
-                Console.WriteLine("{0} es una variable valida", Text);
                 return TypeToken.Var;
             }
             else if (Regex.IsMatch(Text, @"^-?\d+$"))
             {
-                Console.WriteLine("{0} es un numero", Text);
                 return TypeToken.Number;
-            }
-            
+            }            
             else
             {
-                Console.WriteLine("{0} sintax error", Text);
                 return TypeToken.Error;
             }
             
             
         }
 
-        public CardType CompareCardType(string type)
-        {
-            foreach(CardType s in cardType)
+        //Verificar existencia del tipo carta pasado
+            public CardType CompareCardType(string type)
             {
-                if(s.ToString() == type)
+                foreach(CardType s in cardType)
                 {
-                    return s;
+                    if(s.ToString() == type)
+                    {
+                        return s;
+                    }
                 }
+
+                return CardType.None;
             }
 
-            return CardType.None;
-        }
-
+        //Verificar existencia del tipo de ataque pasado
         public AttackType CompareAttackType(string type)
         {
             foreach (AttackType s in attackType)
@@ -92,17 +90,61 @@ namespace CardCompiler
             return AttackType.None;
         }
 
+        //Verificar existencia del tipo source selector pasado
         public string CompareSourceType(string type)
         {
-            foreach (string s in Source)
+            foreach (SourceType s in Source)
             {
-                if (s == type)
+                if (s.ToString() == type)
                 {
-                    return s;
+                    return s.ToString();
                 }
             }
 
             return " ";
         }
+    }
+
+
+    //Definicion de enum caracteristicos del compiler
+
+    //Tipos de Variable
+    public enum TypeToken
+    {
+        Error,
+        Number,
+        String,
+        Var
+    }
+    //Tipos de ataque
+    public enum AttackType
+    {
+        Melee,
+        Ranged,
+        Siege,
+        None
+    }
+    //Tipos de cartas
+    public enum CardType
+    {
+        Oro,
+        Plata,
+        Clima,
+        Aumento,
+        Lider,
+        Despeje,
+        Lure,
+        None
+    }
+    //Tipos de Source Selector
+    public enum SourceType
+    {
+        hand,
+        otherhand,
+        field,
+        otherfield,
+        deck,
+        otherdeck,
+        board
     }
 }

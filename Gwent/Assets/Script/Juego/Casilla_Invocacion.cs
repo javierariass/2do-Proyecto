@@ -51,7 +51,7 @@ public class Casilla_Invocacion : MonoBehaviour
                             invocada = true;
                         }
 
-                        if (att == AttackType.Asedio && gameManager.Climas[2] == null  && casilla == 14)
+                        if (att == AttackType.Siege && gameManager.Climas[2] == null  && casilla == 14)
                         {
                             Deck.Card_Invoke.transform.position = gameManager.Climas_Pos[2].transform.position;
                             Deck.Card_Invoke.GetComponent<GeneralCard>().invoke = true;
@@ -78,7 +78,7 @@ public class Casilla_Invocacion : MonoBehaviour
                             invocada = true;
                         }
 
-                        if (att == AttackType.Asedio && Deck.Aum[2] == null && casilla == 17)
+                        if (att == AttackType.Siege && Deck.Aum[2] == null && casilla == 17)
                         {
                             Deck.Card_Invoke.transform.position = Deck.Aum_Pos[2].transform.position;
                             Deck.Card_Invoke.GetComponent<GeneralCard>().invoke = true;
