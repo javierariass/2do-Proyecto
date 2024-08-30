@@ -1,0 +1,1 @@
+Guardar&Amount|Number^&for-TargetPowerSum-

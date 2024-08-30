@@ -1,25 +1,2 @@
-Miguel|Oro|Matcom|10|Ranged-|Barajear*
-Diego|Oro|Matcom|10|Ranged-|*
-Diego|Oro|Matcom|10|Ranged-|*
-Diego|Oro|Matcom|10|Ranged-|*
-Diego|Oro|Matcom|10|Ranged-|*
-Diego|Oro|Matcom|10|Ranged-|*
-Diego|Oro|Matcom|10|Ranged-|*
-Diego|Oro|Matcom|10|Ranged-|*
-Diego|Oro|Matcom|10|Ranged-|*
-Diego|Oro|Matcom|10|Ranged-|*
-Diego|Oro|Matcom|10|Ranged-|*
-Diego|Oro|Matcom|10|Ranged-|*
-Diego|Oro|Matcom|10|Ranged-|*
-Diego|Oro|Matcom|10|Ranged-|*
-Diego|Oro|Matcom|10|Ranged-|*
-Diego|Oro|Matcom|10|Ranged-|*
-Diego|Oro|Matcom|10|Ranged-|*
-Diego|Oro|Matcom|10|Ranged-|*
-Diego|Lider|Matcom|10|Ranged-|*
-Diego|Oro|Matcom|10|Ranged-|*
-Diego|Oro|Matcom|10|Ranged-|*
-Diego|Oro|Matcom|10|Ranged-|*
-Diego|Oro|Matcom|10|Ranged-|*
-Diego|Oro|Matcom|10|Ranged-Melee-Asedio-|*
-Diego|Oro|Matcom|10|Ranged-Melee-Asedio-|*
+Diego|Oro|Matcom|10|Ranged-|Guardar**board.false.Power == 5
+Diego|Oro|Matcom|10|Ranged-|Guardar*Amount:4.*board.false.Power == 5

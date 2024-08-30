@@ -12,6 +12,7 @@ namespace CardCompiler
         List<CardType> cardType = new();
         List<AttackType> attackType = new();
         List<SourceType> Source = new();
+        List<TargetProperty> CardProperties = new();
 
         //Constructor con parametro predefinidos
         public LexicalProcess()
@@ -36,6 +37,11 @@ namespace CardCompiler
             Source.Add(SourceType.deck);
             Source.Add(SourceType.otherdeck);
             Source.Add(SourceType.board);
+
+            CardProperties.Add(TargetProperty.Faction);
+            CardProperties.Add(TargetProperty.Name);
+            CardProperties.Add(TargetProperty.Power);
+            CardProperties.Add(TargetProperty.Type);
 
         }
 
@@ -103,6 +109,19 @@ namespace CardCompiler
 
             return " ";
         }
+
+        public string CompareTargetProperty(string type)
+        {
+            foreach (TargetProperty s in Source)
+            {
+                if (s.ToString() == type)
+                {
+                    return s.ToString();
+                }
+            }
+
+            return " ";
+        }
     }
 
 
@@ -147,4 +166,14 @@ namespace CardCompiler
         otherdeck,
         board
     }
+    //Propiedades de las cartas para un target
+    public enum TargetProperty
+    {
+        Name,
+        Faction,
+        Power,
+        Type,
+        Owner
+    }
+
 }

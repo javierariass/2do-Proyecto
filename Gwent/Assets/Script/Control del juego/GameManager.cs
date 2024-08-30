@@ -92,8 +92,8 @@ public class GameManager : MonoBehaviour
             Card card = new(deck[0], process.CompareCardType(deck[1]), deck[2], int.Parse(deck[3]), attack,TriggerPlayer);
             if(deck.Length == 6 && File.Exists(Application.dataPath + "/Resources/Effects/" + deck[5].Split('*')[0] + ".txt"))
             {
-                string[] effec = File.ReadAllText(Application.dataPath + "/Resources/Effects/" + deck[5].Split('*')[0] + ".txt").Split('*');
-                card.effect = new effect(effec[0], effec[1].Split('-').ToList(), effec[2].Split('-').ToList());
+                string effec = File.ReadAllText(Application.dataPath + "/Resources/Effects/" + deck[5].Split('*')[0] + ".txt");
+                card.effect = new effect(effec);
             }
             gameObject.AddComponent<GeneralCard>();
             gameObject.GetComponent<GeneralCard>().Create(card,player,TriggerPlayer);
