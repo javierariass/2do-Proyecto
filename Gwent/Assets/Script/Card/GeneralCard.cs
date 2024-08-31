@@ -18,7 +18,8 @@ public class GeneralCard : MonoBehaviour
     public bool invoke,effects = false;
     public effect effect;
     public int players;
-
+    public Card Card;
+    public bool InEscena = true;
     private void Start()
     {
         Imag_Des = GameObject.FindGameObjectWithTag("Img_Des").GetComponent<RawImage>();
@@ -28,9 +29,14 @@ public class GeneralCard : MonoBehaviour
 
     private void Update()
     {
+        if(!InEscena)
+        {
+            Destroy(gameObject);
+        }
         if(invoke && !effects && effect != null)
         {
-            GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>().context.ejecutar(effect,players);
+            GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>().DeterminateContext();
+            effect.Action(GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>().context);
             effects = true;
         }
     }
@@ -44,6 +50,7 @@ public class GeneralCard : MonoBehaviour
         Type = carta.Type;
         Attack = carta.AttackType;
         effect = carta.effect;
+        Card = carta;
 
         gameObject.name = Name;
         gameObject.transform.localScale = new Vector3(0.0784518644f, 0.0814131051f, 1);

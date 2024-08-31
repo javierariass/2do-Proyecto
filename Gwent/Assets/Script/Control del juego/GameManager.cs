@@ -25,6 +25,7 @@ public class GameManager : MonoBehaviour
     public GameObject[] Climas,Climas_Pos = new GameObject[3];
     public bool Jug1_End, Jug2_End = false;
     public Context context;
+    public GameObject[] Board = new GameObject[24];
     // Start is called before the first frame update
     void Start()
     {
@@ -36,6 +37,8 @@ public class GameManager : MonoBehaviour
         PowerInCamp();
         EndRound();
         EndGame();
+        DeterminateContext();
+        
     }
 
     //Funcion de Inicializar juego 
@@ -93,7 +96,7 @@ public class GameManager : MonoBehaviour
             if(deck.Length == 6 && File.Exists(Application.dataPath + "/Resources/Effects/" + deck[5].Split('*')[0] + ".txt"))
             {
                 string effec = File.ReadAllText(Application.dataPath + "/Resources/Effects/" + deck[5].Split('*')[0] + ".txt");
-                card.effect = new effect(effec);
+                card.effect = new effect(effec, deck[5].Split('*')[2],card);
             }
             gameObject.AddComponent<GeneralCard>();
             gameObject.GetComponent<GeneralCard>().Create(card,player,TriggerPlayer);
@@ -305,6 +308,23 @@ public class GameManager : MonoBehaviour
             if (deck2.Mazo[i] != null)
             {
                 context.DeckOfPlayer_2.Add(deck2.Mazo[i].GetComponent<GeneralCard>());
+            }
+        }
+
+        //Cartas del field1
+        for (int i = 0; i < deck1.Field.Length; i++)
+        {
+            if (deck1.Field[i] != null)
+            {
+                context.FieldOfPlayer_1.Add(deck1.Field[i].GetComponent<GeneralCard>());
+            }
+        }
+        //Cartas del field2
+        for (int i = 0; i < deck2.Field.Length; i++)
+        {
+            if (deck2.Field[i] != null)
+            {
+                context.FieldOfPlayer_2.Add(deck2.Field[i].GetComponent<GeneralCard>());
             }
         }
     }

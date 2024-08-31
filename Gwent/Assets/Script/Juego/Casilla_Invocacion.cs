@@ -96,6 +96,14 @@ public class Casilla_Invocacion : MonoBehaviour
                                 Deck.Hand[i] = null;
                             }
                         }
+                        for(int i = 0; i < gameManager.Board.Length; i++)
+                        {
+                            if(gameManager.Board[i] == null)
+                            {
+                                gameManager.Board[i] = Deck.Card_Invoke;
+                                break;
+                            }
+                        }
                         Deck.Card_Invoke = null;
                         gameManager.invoke = true;
                     }

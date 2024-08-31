@@ -20,10 +20,6 @@ public class Context : MonoBehaviour
 
     public GameManager GameManager;
 
-    public void ejecutar(effect Effect,int player)
-    {
-       
-    }
 }
 
 

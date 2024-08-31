@@ -479,7 +479,7 @@ namespace CardCompiler
         }
 
         //Metodo para comparaciones
-        private bool Compare(string Code,int Nline)
+        public bool Compare(string Code,int Nline)
         {
             string[] numbers;
             if(Find(Code,"<="))
@@ -1012,20 +1012,38 @@ namespace CardCompiler
                             //Asignacion Pop
                             if (assing.Length == 4 && EliminateSpace(assing[0]) == "context")
                             {
-                                if (EliminateSpace(assing[2]) == "Pop()")
+                                if (EliminateSpace(assing[2]) == "Pop()" && VerificateContextList(assing[1]) != " ")
                                 {
                                     Local_Param_Cards.Add(var);
-                                    Ordenes += "Pop|" + var + "-";
+                                    Ordenes += "Pop|" + assing[1] + "|" + var + "-";
                                 }
-
-                                //Falta definir Find
+                                //Asignacion Find
+                                if (EliminateSpace(assing[2]) == "Find()" && VerificateContextList(assing[1]) != " ")
+                                {
+                                    Local_Param_Cards.Add(var);
+                                    Ordenes += "Find|" + assing[1] + "|" + var + "-";
+                                }
+                            }
+                            //Asignacion Pop desde una lista asignada
+                            else if (assing.Length == 3 && Local_Param_List.Contains(EliminateSpace(assing[0])))
+                            {
+                                if (EliminateSpace(assing[1]) == "Pop()" && Local_Param_List.Contains(assing[1]))
+                                {
+                                    Local_Param_Cards.Add(var);
+                                    Ordenes += "Pop|" + assing[1] + "|" + var + "-";
+                                }
+                                if (EliminateSpace(assing[2]) == "Find()" && Local_Param_List.Contains(EliminateSpace(assing[0])))
+                                {
+                                    Local_Param_Cards.Add(var);
+                                    Ordenes += "Find|" + assing[1] + "|" + var + "-";
+                                }
                             }
                             //Asignacion de una lista
                             else if (assing.Length == 3 && VerificateContextList(EliminateSpace(assing[1])) != " ")
                             {
                                 //Definir Assignacion
                                 Local_Param_List.Add(var);
-                                Ordenes += "ListAdd|" + var + "-";
+                                Ordenes += "ListAdd|" + VerificateContextList(EliminateSpace(assing[1])) + "|" + var +  "-";
                             }
                             //Asignacion de alguna propiedad target
                             else if (assing.Length == 3 && process.CompareTargetProperty(EliminateSpace(assing[1])) != " " && EliminateSpace(assing[0]) == "target" && Ordenes.Contains("for"))
@@ -1045,14 +1063,14 @@ namespace CardCompiler
                         string parametro = "";
                         if (assign[1].Split('(', ')').Length >= 2) parametro = (EliminateSpace(assign[1].Split('(', ')')[1]));
                         //Funciones directas del context
-                        if (Local_Param_Cards.Contains(parametro) && assign.Length == 4 && EliminateSpace(assign[0]) == "context") function = ContextFunction(assign, parametro);
+                        if (Local_Param_Cards.Contains(parametro) && assign.Length == 4 && EliminateSpace(assign[0]) == "context" && VerificateContextList(EliminateSpace(assign[1]))!= " ") function = ContextFunction(assign, parametro, VerificateContextList(EliminateSpace(assign[1])));
                         else if (assign.Length == 4 && EliminateSpace(assign[0]) == "context") function = ContextFunction(assign);
                         //Funciones de una variable que contienen una lista del context
-                        else if (Local_Param_Cards.Contains(parametro) && assign.Length == 3 && Local_Param_List.Contains(EliminateSpace(assign[0]))) function = ContextFunction(assign, parametro, 1);
+                        else if (Local_Param_Cards.Contains(parametro) && assign.Length == 3 && Local_Param_List.Contains(EliminateSpace(assign[0]))) function = ContextFunction(assign, parametro,assign[0], 1);
                         else if (assign.Length == 3 && Local_Param_List.Contains(EliminateSpace(assign[0]))) function = ContextFunction(assign, value: 1);
                         //Funciones de operador doble con un target.Power
-                        if (Ordenes.Contains("for") && assign.Length == 3 && EliminateSpace(assign[0]) == "target" && EliminateSpace(assign[1]) == "Power++") function = "TargetPowerSum";
-                        else if (Ordenes.Contains("for") && assign.Length == 3 && EliminateSpace(assign[0]) == "target" && EliminateSpace(assign[1]) == "Power--") function = "TargetPowerRest";
+                        if (Ordenes.Contains("for") && assign.Length == 3 && EliminateSpace(assign[0]) == "target" && EliminateSpace(assign[1]) == "Power++") function = "TargetPowerSum|Source";
+                        else if (Ordenes.Contains("for") && assign.Length == 3 && EliminateSpace(assign[0]) == "target" && EliminateSpace(assign[1]) == "Power--") function = "TargetPowerRest|Source";
                         //Leer instrucciones
                         if (function != " ") Ordenes += function + "-";
                         else error.Add(new ErrorBack(Nline, ErrorValue.SintaxErrorDeclaration));
@@ -1099,42 +1117,43 @@ namespace CardCompiler
             if (Code == "Graveyard") return Code;
             if (Code == "Field") return Code;
             if (Code == "Board") return Code;
+            if (Code == "Source") return Code;
             if (Find(Code, "(") && Find(Code, ")"))
             {
                 string[] ofPlayer = Code.Split('(', ')');
                 if (Find(EliminateSpace(ofPlayer[0]), "DeckOfPlayer"))
                 {
                     if (EliminateSpace(ofPlayer[1]) == "context.TriggerPlayer") return "Deck";
-                    else if (process.VerifyValidate(EliminateSpace(ofPlayer[1])) == TypeToken.Var) return ofPlayer[1];
+                    else if (process.VerifyValidate(EliminateSpace(ofPlayer[1])) == TypeToken.Var) return "Source";
                 }
                 if (Find(EliminateSpace(ofPlayer[0]), "GraveyardOfPlayer"))
                 {
                     if (EliminateSpace(ofPlayer[1]) == "context.TriggerPlayer") return "Graveyard";
-                    else if (process.VerifyValidate(EliminateSpace(ofPlayer[1])) == TypeToken.Var) return ofPlayer[1];
+                    else if (process.VerifyValidate(EliminateSpace(ofPlayer[1])) == TypeToken.Var) return "Source";
                 }
                 if (Find(EliminateSpace(ofPlayer[0]), "HandOfPlayer"))
                 {
                     if (EliminateSpace(ofPlayer[1]) == "context.TriggerPlayer") return "Hand";
-                    else if (process.VerifyValidate(EliminateSpace(ofPlayer[1])) == TypeToken.Var) return ofPlayer[1];
+                    else if (process.VerifyValidate(EliminateSpace(ofPlayer[1])) == TypeToken.Var) return "Source";
                 }
                 if (Find(EliminateSpace(ofPlayer[0]), "FieldOfPlayer"))
                 {
                     if (EliminateSpace(ofPlayer[1]) == "context.TriggerPlayer") return "Field";
-                    else if (process.VerifyValidate(EliminateSpace(ofPlayer[1])) == TypeToken.Var) return ofPlayer[1];
+                    else if (process.VerifyValidate(EliminateSpace(ofPlayer[1])) == TypeToken.Var) return "Source";
                 }
             }
             return " ";
         }
 
         //Determinar funcion del context
-        private string ContextFunction(string[] var, string param = " ", int value = 2)
+        private string ContextFunction(string[] var, string param = " ",string list = "", int value = 2)
         {
-            if (EliminateSpace(var[value]) == "Pop()") return "Pop";
-            if (EliminateSpace(var[value]) == "Remove(" + param + ")") return "Remove|" + param;
-            if (EliminateSpace(var[value]) == "Push(" + param + ")") return "Push|" + param; ;
-            if (EliminateSpace(var[value]) == "Add(" + param + ")") return "Add|" + param;
-            if (EliminateSpace(var[value]) == "SendBottom(" + param + ")") return "SendBottom|" + param;
-            if (EliminateSpace(var[value]) == "Shufle()") return "Shuffle";
+            if (EliminateSpace(var[value]) == "Pop()") return "Pop|" + list;
+            if (EliminateSpace(var[value]) == "Remove(" + param + ")") return "Remove|" + list + "|" + param;
+            if (EliminateSpace(var[value]) == "Push(" + param + ")") return "Push|" + list + "|" + param + "|"; ;
+            if (EliminateSpace(var[value]) == "Add(" + param + ")") return "Add|" + list + "|" + param + "|";
+            if (EliminateSpace(var[value]) == "SendBottom(" + param + ")") return "SendBottom|" + list + "|" + param + "|";
+            if (EliminateSpace(var[value]) == "Shufle()") return "Shuffle|" +list;
 
             return " ";
         }

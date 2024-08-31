@@ -1,2 +1,3 @@
 Diego|Oro|Matcom|10|Ranged-|Guardar**board.false.Power == 5
 Diego|Oro|Matcom|10|Ranged-|Guardar*Amount:4.*board.false.Power == 5
+Diego|Oro|matcom|100|Ranged-|*
