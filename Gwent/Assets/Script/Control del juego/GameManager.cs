@@ -23,9 +23,10 @@ public class GameManager : MonoBehaviour
     public TextMeshProUGUI P1Round,P2Round,P1Power,P2Power;
     public float Round1,Round2, RoundPower1,RoundPower2;
     public GameObject[] Climas,Climas_Pos = new GameObject[3];
-    public bool Jug1_End, Jug2_End = false;
+    public bool Jug1_End, Jug2_End,Game_End = false;
     public Context context;
-    public GameObject[] Board = new GameObject[24];
+    public GameObject[] Board = new GameObject[33];
+
     // Start is called before the first frame update
     void Start()
     {
@@ -34,11 +35,11 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
+        if(Input.GetMouseButtonDown(0)) GetComponent<AudioSource>().Play();
         PowerInCamp();
         EndRound();
         EndGame();
-        DeterminateContext();
-        
+        DeterminateContext();      
     }
 
     //Funcion de Inicializar juego 
@@ -96,7 +97,7 @@ public class GameManager : MonoBehaviour
             if(deck.Length == 6 && File.Exists(Application.dataPath + "/Resources/Effects/" + deck[5].Split('*')[0] + ".txt"))
             {
                 string effec = File.ReadAllText(Application.dataPath + "/Resources/Effects/" + deck[5].Split('*')[0] + ".txt");
-                card.effect = new effect(effec, deck[5].Split('*')[2],card);
+                card.effect = new effect(effec, deck[5].Split('*')[2],card,deck[5].Split('*')[1]);
             }
             gameObject.AddComponent<GeneralCard>();
             gameObject.GetComponent<GeneralCard>().Create(card,player,TriggerPlayer);
@@ -163,13 +164,12 @@ public class GameManager : MonoBehaviour
         {
             invoke = false;
         }
-        
     }
 
     //Funcion para verificar fin de rondas
     public void EndRound()
     {
-        if (Jug1_End && Jug2_End)
+        if (Jug1_End && Jug2_End && !Game_End)
         {
             if (RoundPower1 > RoundPower2)
             {
@@ -179,7 +179,7 @@ public class GameManager : MonoBehaviour
             {
                 Round2++;
             }
-            else
+            else if(RoundPower2 == RoundPower1)
             {
                 Round2++;
                 Round1++;
@@ -188,27 +188,34 @@ public class GameManager : MonoBehaviour
             P2Round.text = "P2: " + Round2;
             Jug1_End = false;
             Jug2_End = false;
+
             for(int i = 0; i < Climas_Pos.Length; i++)
             {
-                Destroy(Climas[i]);
+                if (Climas[i] != null)
+                {
+                    if (Climas[i].GetComponent<GeneralCard>().players == 1) deck1.Graveyard.Add(Climas[i]);
+                    if (Climas[i].GetComponent<GeneralCard>().players == 2) deck2.Graveyard.Add(Climas[i]);
+                }
                 Climas[i] = null;
             }
 
             for(int i = 0; i < deck1.Field.Length; i++)
             {
-                Destroy(deck1.Field[i]);
+                if (deck1.Field[i] != null) deck1.Graveyard.Add(deck1.Field[i]);
                 deck1.Field[i] = null;
-                Destroy(deck2.Field[i]);
+                if (deck2.Field[i] != null) deck2.Graveyard.Add(deck2.Field[i]);
                 deck2.Field[i] = null;
             }
 
             for (int i = 0; i < deck1.Aum.Length; i++)
             {
-                Destroy(deck1.Aum[i]);
+                if (deck1.Aum[i] != null) deck1.Graveyard.Add(deck1.Aum[i]);
                 deck1.Aum[i] = null;
-                Destroy(deck2.Aum[i]);
+                if (deck2.Aum[i] != null) deck2.Graveyard.Add(deck2.Aum[i]);
                 deck2.Aum[i] = null;
             }
+            deck1.Robar(2);
+            deck2.Robar(2);
         }
     }
 
@@ -240,17 +247,26 @@ public class GameManager : MonoBehaviour
     {
         if(Round1 == 2 && Round2 < 2)
         {
-            //Gana jugador 1
+            invoke = true;
+            Jug1_End = true;
+            Jug2_End = true;
+            Game_End = true;
         }
 
         if (Round1 < 2 && Round2 == 2)
         {
-            //Gana jugador 2
+            invoke = true;
+            Jug1_End = true;
+            Jug2_End = true;
+            Game_End = true;
         }
 
         if (Round1 == 2 && Round2 == 2)
         {
-            //Empate
+            invoke = true;
+            Jug1_End = true;
+            Jug2_End = true;
+            Game_End = true;
         }
     }
 
@@ -292,7 +308,21 @@ public class GameManager : MonoBehaviour
                 context.Board.Add(deck2.Field[i].GetComponent<GeneralCard>());
             }
         }
-
+        for (int i = 0; i < 3; i++)
+        {
+            if (deck1.Aum[i] != null)
+            {
+                context.Board.Add(deck1.Aum[i].GetComponent<GeneralCard>());
+            }
+            if (deck2.Aum[i] != null)
+            {
+                context.Board.Add(deck2.Aum[i].GetComponent<GeneralCard>());
+            }
+            if (Climas[i] != null)
+            {
+                context.Board.Add(Climas[i].GetComponent<GeneralCard>());
+            }
+        }
         //Cartas del deck1
         for(int i = 0; i < deck1.Mazo.Length;i++)
         {
@@ -327,7 +357,25 @@ public class GameManager : MonoBehaviour
                 context.FieldOfPlayer_2.Add(deck2.Field[i].GetComponent<GeneralCard>());
             }
         }
+
+        //Cartas del Graveyard1
+        for (int i = 0; i < deck1.Graveyard.Count; i++)
+        {
+            if (deck1.Graveyard[i] != null)
+            {
+                context.GraveyardOfPlayer_1.Add(deck1.Graveyard[i].GetComponent<GeneralCard>());
+            }
+        }
+        //Cartas del Graveyard2
+        for (int i = 0; i < deck2.Graveyard.Count; i++)
+        {
+            if (deck2.Graveyard[i] != null)
+            {
+                context.GraveyardOfPlayer_2.Add(deck2.Graveyard[i].GetComponent<GeneralCard>());
+            }
+        }
     }
+
 }
 
 

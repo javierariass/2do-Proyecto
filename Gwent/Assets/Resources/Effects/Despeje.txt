@@ -1,0 +1,1 @@
+Despeje&&NumVar|Source|number i = 0;-while|i++ < 4-Find|Board|carta|Type == 'Clima'-Remove|Board|carta-

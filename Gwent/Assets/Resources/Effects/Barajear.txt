@@ -1,1 +1,1 @@
-Barajear&&TargetPowerRest|Source-
+Barajear&&for|Source-TargetPowerSumTo|Source|5

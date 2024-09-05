@@ -25,7 +25,7 @@ public class Casilla_Invocacion : MonoBehaviour
             {
                 if (att == attackType)
                 {                   
-                    if (Deck.Card_Invoke.GetComponent<GeneralCard>().Type == CardType.Oro || Deck.Card_Invoke.GetComponent<GeneralCard>().Type == CardType.Plata && Deck.Field[casilla] == null)
+                    if ((Deck.Card_Invoke.GetComponent<GeneralCard>().Type == CardType.Oro || Deck.Card_Invoke.GetComponent<GeneralCard>().Type == CardType.Plata) && casilla <= 11 && Deck.Field[casilla] == null )
                     {
                         Deck.Card_Invoke.transform.position = transform.position;
                         Deck.Card_Invoke.GetComponent<GeneralCard>().invoke = true;

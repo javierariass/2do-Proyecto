@@ -1,15 +1,18 @@
-﻿using Newtonsoft.Json.Serialization;
+﻿using Mono.Cecil.Cil;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http.Headers;
+using System.Net.NetworkInformation;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Unity.VisualScripting;
 using UnityEditor.Tilemaps;
 using UnityEngine;
 namespace CardCompiler
@@ -50,7 +53,7 @@ namespace CardCompiler
                 else if (Regex.IsMatch(Line, @"^effect|<#definition\s+['{']*;$")) EffectCreate(Lines, NLine);
 
                 //Verificacion de operador doble 
-                else if (IncrementOrDecrement(Line)) continue;
+                else if (IncrementOrDecrement(Line) != "") continue;
 
                 //Metodo para imprimir en pantalla
                 else if (Find(Line, "Write") && Find(Line, "(") && FindEndExpression(Line, ';'))
@@ -105,7 +108,7 @@ namespace CardCompiler
         }
 
         //Metodo para crear una variable booleana
-        private void CreateBoolVar(string Line, int Nline)
+        public void CreateBoolVar(string Line, int Nline)
         {
             if (FindEndExpression(Line, ';'))
             {
@@ -135,7 +138,7 @@ namespace CardCompiler
         }
 
         //Metodo para crear una variable number
-        private void CreateNumberVar(string Line, int Nline)
+        public void CreateNumberVar(string Line, int Nline)
         {
             if (FindEndExpression(Line, ';'))
             {
@@ -145,7 +148,7 @@ namespace CardCompiler
                     string[] Verify = separanum[0].Split(' ');
                     string[] ent = separanum[1].Split(';');
                     if (Verify.Length >= 2 && process.VerifyValidate(Verify[1]) == TypeToken.Var && Verify[0] == "number")
-                    {
+                    {                 
                         string num = OperationAritmetic(ent[0], Nline);
                         if (num != " ") VarNumber[Verify[1]] = num;
                     }
@@ -293,29 +296,56 @@ namespace CardCompiler
         }
 
         //Metodo para encontrar un operador doble en una linea
-        public bool IncrementOrDecrement(string code)
+        public string IncrementOrDecrement(string code)
 
         {
             string[] num;
             if (Find(code, "++"))
             {
                 num = code.Split("++");
+
                 if (VarNumber.ContainsKey(EliminateSpace(num[0])))
                 {
                     VarNumber[EliminateSpace(num[0])] = (int.Parse(VarNumber[EliminateSpace(num[0])]) + 1).ToString();
-                    return true;
+                    return EliminateSpace(num[0]);
                 }
             }
             else if (Find(code, "--"))
             {
-                num = code.Split("++");
+                num = code.Split("--");
                 if (VarNumber.ContainsKey(EliminateSpace(num[0])))
                 {
                     VarNumber[EliminateSpace(num[0])] = (int.Parse(VarNumber[EliminateSpace(num[0])]) - 1).ToString();
-                    return true;
+                    return EliminateSpace(num[0]);
                 }
             }
-            return false;
+            else if (Find(code, "+="))
+            {
+                num = code.Split("+=");
+                if (VarNumber.ContainsKey(EliminateSpace(num[0])))
+                {
+                    if (process.VerifyValidate(EliminateSpace(num[1])) == TypeToken.Var) num[1] = VarValue(VarNumber, num[1]);
+                    if (process.VerifyValidate(EliminateSpace(num[1])) == TypeToken.Number)
+                    {
+                        VarNumber[EliminateSpace(num[0])] = (int.Parse(VarValue(VarNumber,num[0])) + int.Parse(num[1])).ToString();
+                        return EliminateSpace(num[0]);
+                    }
+                }
+            }
+            else if (Find(code, "-="))
+            {
+                num = code.Split("-=");
+                if (VarNumber.ContainsKey(EliminateSpace(num[0])))
+                {
+                    if (process.VerifyValidate(EliminateSpace(num[1])) == TypeToken.Var) num[1] = VarValue(VarNumber, num[1]);
+                    if (process.VerifyValidate(EliminateSpace(num[1])) == TypeToken.Number)
+                    {
+                        VarNumber[EliminateSpace(num[0])] = (int.Parse(VarValue(VarNumber, num[0])) - int.Parse(num[1])).ToString();
+                        return EliminateSpace(num[0]);
+                    }
+                }
+            }
+            return " ";
         }
 
         //Metodo para operaciones aritmeticas
@@ -324,12 +354,12 @@ namespace CardCompiler
             string[] sum, rest, mul, div, pot;
             Code = EliminateSpace(Code);
             bool number;
-
+            string ine = IncrementOrDecrement(Code);
             //Verificar si es un numero
             if (process.VerifyValidate(Code) == TypeToken.Number) return Code;
 
             //Verificar operador doble
-            else if (IncrementOrDecrement(Code)) return VarValue(VarNumber, Code);
+            else if (ine != " ") return VarValue(VarNumber, ine);
 
             //Verificar si es una variable
             else if (process.VerifyValidate(Code) == TypeToken.Var) return VarValue(VarNumber, Code);
@@ -484,47 +514,57 @@ namespace CardCompiler
             string[] numbers;
             if(Find(Code,"<="))
             {
+
                 numbers = Code.Split("<=");
                 numbers[0] = OperationAritmetic(numbers[0],Nline);
-                numbers[2] = OperationAritmetic(numbers[2], Nline);
-                if (numbers[0] != " " && numbers[2] != " ")
+                numbers[1] = OperationAritmetic(numbers[1], Nline);
+                if (numbers[0] != " " && numbers[1] != " ")
                 {
-                    if (float.Parse(numbers[0]) == float.Parse(numbers[2])) return true;
-                    else if (float.Parse(numbers[0]) < float.Parse(numbers[2])) return true;
+                    if (float.Parse(numbers[0]) <= float.Parse(numbers[1])) return true;
                     else return false;
                 }
             }
             else if(Find(Code,">="))
             {
-                numbers = Code.Split("<=");
+                numbers = Code.Split(">=");
                 numbers[0] = OperationAritmetic(numbers[0], Nline);
-                numbers[2] = OperationAritmetic(numbers[2], Nline);
+                numbers[1] = OperationAritmetic(numbers[1], Nline);
                 if (numbers[0] != " " && numbers[2] != " ")
                 {
-                    if (float.Parse(numbers[0]) == float.Parse(numbers[2])) return true;
-                    else if (float.Parse(numbers[0]) > float.Parse(numbers[2])) return true;
+                    if (float.Parse(numbers[0]) >= float.Parse(numbers[2])) return true;
                     else return false;
                 }
             }
             else if (Find(Code, ">"))
             {
-                numbers = Code.Split('>', '=');
+                numbers = Code.Split('>');
                 numbers[0] = OperationAritmetic(numbers[0], Nline);
-                numbers[2] = OperationAritmetic(numbers[2], Nline);
-                if (numbers[0] != " " && numbers[2] != " ")
+                numbers[1] = OperationAritmetic(numbers[1], Nline);
+                if (numbers[0] != " " && numbers[1] != " ")
                 {
-                    if (float.Parse(numbers[0]) > float.Parse(numbers[2])) return true;
+                    if (float.Parse(numbers[0]) > float.Parse(numbers[1])) return true;
                     else return false;
                 }
             }
             else if (Find(Code, "<"))
             {
-                numbers = Code.Split('>', '=');
+                numbers = Code.Split('<');
                 numbers[0] = OperationAritmetic(numbers[0], Nline);
-                numbers[2] = OperationAritmetic(numbers[2], Nline);
-                if (numbers[0] != " " && numbers[2] != " ")
+                numbers[1] = OperationAritmetic(numbers[1], Nline);
+                if (numbers[0] != " " && numbers[1] != " ")
                 {
-                    if (float.Parse(numbers[0]) < float.Parse(numbers[2])) return true;
+                    if (float.Parse(numbers[0]) < float.Parse(numbers[1])) return true;
+                    else return false;
+                }
+            }
+            else if (Find(Code, "=="))
+            {
+                numbers = Code.Split("==");
+                numbers[0] = OperationAritmetic(numbers[0], Nline);
+                numbers[1] = OperationAritmetic(numbers[1], Nline);
+                if (numbers[0] != " " && numbers[1] != " ")
+                {
+                    if (float.Parse(numbers[0]) == float.Parse(numbers[1])) return true;
                     else return false;
                 }
             }
@@ -532,7 +572,7 @@ namespace CardCompiler
         }
 
         //Metodo para devolver valor de una variable tipo numero y verificar si existe
-        private string VarValue(Dictionary<string, string> Variables, string Var)
+        public string VarValue(Dictionary<string, string> Variables, string Var)
         {
             foreach (var word in Variables.Keys) if (Var == word) return Variables[Var];
             return " ";
@@ -811,7 +851,6 @@ namespace CardCompiler
             //Selector
             if (cierre)
             {
-                cierre = false;
                 if (Regex.IsMatch(Code[Nline], @"^Selector|<#definition\s+['{']*;$") && Find(Code[Nline], ":") && FindEndExpression(Code[Nline], '{'))
                 {
                     string source = "";
@@ -829,7 +868,6 @@ namespace CardCompiler
                                 sintax[1] = EliminateSpace(sintax[1]);
                                 if (process.VerifyValidate(sintax[1]) == TypeToken.Var) sintax[1] = VarValue(VarString, sintax[1]);
                                 if (process.VerifyValidate(sintax[1]) == TypeToken.String) sintax[1] = CreateString(sintax[1], Nline);
-                                sintax[1] = process.CompareSourceType(sintax[1]);
                                 if (sintax[1] != " ") source = sintax[1];
                                 else error.Add(new ErrorBack(Nline+1, ErrorValue.SintaxErrorIncorrectStatament));
                             }
@@ -863,25 +901,29 @@ namespace CardCompiler
                         i++;
                         Nline++;
                     }
-                    if (source != "" && predicate != "") OnActive[2] = source + "." + single + "." + predicate;
+                    if (source != "" && predicate != "") OnActive[2] = source + "." + single + "." + predicate + ".";
                 }
             }
             else error.Add(new ErrorBack(Nline, ErrorValue.SintaxErrorDeclaration));
 
             //Creando respuesta de OnActivation
-            if (EliminateSpace(Code[Nline]) == "}" && EliminateSpace(Code[Nline + 1]) == "}")
+            if (EliminateSpace(Code[Nline]) == "}")
             {
-                if (EliminateSpace(Code[Nline + 2]) == "]")
+                if(EliminateSpace(Code[Nline + 1]) == "}")
                 {
-                    if (OnActive[0] != null && OnActive[2] != null)
+                    if (EliminateSpace(Code[Nline + 2]) == "]")
                     {
-                        string code = OnActive[0] + "*" + OnActive[1] + "*" + OnActive[2];
-                        return code;
+                        if (OnActive[0] != null && OnActive[2] != null)
+                        {
+                            string code = OnActive[0] + "*" + OnActive[1] + "*" + OnActive[2];
+                            return code;
+                        }
                     }
+                    else error.Add(new ErrorBack(Nline + 2, ErrorValue.SintaxErrorClosedBracketsBraces));
                 }
-                else error.Add(new ErrorBack(Nline + 2, ErrorValue.SintaxErrorClosedBracketsBraces));
+                else error.Add(new ErrorBack(Nline + 1, ErrorValue.SintaxErrorClosedCurlyBraces));
             }
-            else error.Add(new ErrorBack(Nline + 1, ErrorValue.SintaxErrorClosedCurlyBraces));
+            else error.Add(new ErrorBack(Nline, ErrorValue.SintaxErrorClosedCurlyBraces));
             return " ";
         }
 
@@ -962,14 +1004,13 @@ namespace CardCompiler
             Array.Copy(Code, Nline - 1, Action, 0, Code.Length - Nline+1);
             string Ordenes = "";
             List<string> Local_Param_Cards = new();
-            List<string> Local_Param_List = new();
-            List<string> Local_Param_Property = new();
+            Dictionary<string,string> Local_Param_List = new();
+            Dictionary<string,string> Local_Param_Property = new();
             bool ActionCierre = false;
             bool EffectCierre = false;
             bool ForCierre = true;
             Local_Param_Cards.Add("");
-            TextImpress.Add("revisando ordenes");
-
+            
             //Eliminar espacios en blanco
             for (int i = 0; i < Action.Length; i++)
             {
@@ -985,7 +1026,7 @@ namespace CardCompiler
                     string[] forIs = code.Split(' ');
                     if (EliminateSpace(forIs[0]) == "for" && EliminateSpace(forIs[1]) == "target" && EliminateSpace(forIs[2]) == "in" && EliminateSpace(forIs[3]) == "targets" && EliminateSpace(forIs[4]) == "{")
                     {
-                        Ordenes += "for-";
+                        Ordenes += "for|Source-";
                         ForCierre = false;
                     }
                     else error.Add(new ErrorBack(Nline, ErrorValue.SintaxErrorForUndefined));
@@ -994,8 +1035,18 @@ namespace CardCompiler
                 //Revision de instruccion while
                 else if (Regex.IsMatch(code, @"^while|<#definition\s+['{']*;$") && Find(code, "(") && Find(code, ")"))
                 {
-                    Ordenes += "while-";
+                    string[] par = code.Split('(', ')');
+                    Ordenes += "while|" + par[1] + "-";
                 }
+
+                //Verificacion de declaracion de un tipo String
+                else if (Regex.IsMatch(code, @"^string|<#texto\s+[a-z](1,15)(\s+:\s+[a-z](1,15)')*;$")) Ordenes += "StrVar|Source|" + code + "-";
+
+                //Verificacion de declaracion de un tipo Number
+                else if (Regex.IsMatch(code, @"^number|<#real\s+[a-z](1,15)(\s+:\s+\d(0,32000))*;$")) Ordenes += "NumVar|Source|" + code + "-";
+
+                //Verificacion de declaracion bool 
+                else if (Regex.IsMatch(code, @"^bool|<#boolean\s+[a-z](1,15)(\s+:\s+(true|false))*;$")) Ordenes += "BoolVar|Source|" + code + "-";
 
                 //Verificar si se utiliza  o asigna una propiedad de target o context
                 else if (Find(code, "."))
@@ -1016,64 +1067,69 @@ namespace CardCompiler
                                 {
                                     Local_Param_Cards.Add(var);
                                     Ordenes += "Pop|" + assing[1] + "|" + var + "-";
-                                }
-                                //Asignacion Find
-                                if (EliminateSpace(assing[2]) == "Find()" && VerificateContextList(assing[1]) != " ")
-                                {
-                                    Local_Param_Cards.Add(var);
-                                    Ordenes += "Find|" + assing[1] + "|" + var + "-";
-                                }
+                                }                               
+                            }
+
+                            //Asignacion Find
+                            if (Find(code, "Find") && Find(code, "(") && Find(code, ")") && Find(code, "unit.") && Find(code, "==") && VerificateContextList(assing[1]) != " ")
+                            {
+                                string[] find = code.Split('(', ')');
+                                Local_Param_Cards.Add(var);
+                                Ordenes += "Find|" + assing[1] + "|" + var + "|" + find[1].Split("unit.")[1] + "-";
                             }
                             //Asignacion Pop desde una lista asignada
-                            else if (assing.Length == 3 && Local_Param_List.Contains(EliminateSpace(assing[0])))
+                            else if (assing.Length == 3 && Local_Param_List.ContainsKey(assing[0]))
                             {
-                                if (EliminateSpace(assing[1]) == "Pop()" && Local_Param_List.Contains(assing[1]))
+                                if (EliminateSpace(assing[1]) == "Pop()" && Local_Param_List.ContainsKey(assing[0]))
                                 {
                                     Local_Param_Cards.Add(var);
-                                    Ordenes += "Pop|" + assing[1] + "|" + var + "-";
+                                    Ordenes += "Pop|" + Local_Param_List[assing[1]] + "|" + var + "-";
                                 }
-                                if (EliminateSpace(assing[2]) == "Find()" && Local_Param_List.Contains(EliminateSpace(assing[0])))
+                                if (Find(code, "Find") && Find(code, "(") && Find(code, ")") && Find(code, "unit.") && Find(code, "==") && Local_Param_List.ContainsKey(EliminateSpace(assing[0])))
                                 {
+                                    string[] find = code.Split('(', ')');
                                     Local_Param_Cards.Add(var);
-                                    Ordenes += "Find|" + assing[1] + "|" + var + "-";
+                                    Ordenes += "Find|" + assing[1] + "|" + var + "|" + find[1].Split("unit.")[1] + "-";
                                 }
                             }
                             //Asignacion de una lista
-                            else if (assing.Length == 3 && VerificateContextList(EliminateSpace(assing[1])) != " ")
+                            else if (assing.Length == 3 && (VerificateContextList(assing[1]) != " " || VerificateContextList(Local_Param_Property[assing[1]]) != " "))
                             {
                                 //Definir Assignacion
-                                Local_Param_List.Add(var);
-                                Ordenes += "ListAdd|" + VerificateContextList(EliminateSpace(assing[1])) + "|" + var +  "-";
+                                Local_Param_List[var] = assing[1];
+                                Ordenes += "ListAdd|" + VerificateContextList(assing[1]) + "|" + var + "-";
                             }
                             //Asignacion de alguna propiedad target
-                            else if (assing.Length == 3 && process.CompareTargetProperty(EliminateSpace(assing[1])) != " " && EliminateSpace(assing[0]) == "target" && Ordenes.Contains("for"))
+                            else if (assing.Length == 3 && EliminateSpace(assing[1]) == "Owner" && EliminateSpace(assing[0]) == "target" && Ordenes.Contains("for"))
                             {
                                 //Definir Asignacion
-                                Local_Param_Property.Add(var);
-                                Ordenes += "PropAdd|" + var + "-";
+                                Local_Param_Property[var] = "context.TriggerPlayer";
                             }
                         }
                     }
 
-                    //Verificar llamada a una funcion de context
-                    else if ((Find(code, "(") && Find(code, ")") || Find(code, "++") || Find(code, "--")) && Find(code, ".") && Find(code, ";"))
+                    //Verificar llamada a una funcion de una funcion
+                    if ((Find(code, "(") && Find(code, ")") || Find(code, "++") || Find(code, "--") || Find(code, "-=") || Find(code, "+=") || Find(code, "=")) && Find(code, ".") && FindEndExpression(code,';'))
                     {
                         string[] assign = code.Split('.', ';');
                         string function = " ";
                         string parametro = "";
-                        if (assign[1].Split('(', ')').Length >= 2) parametro = (EliminateSpace(assign[1].Split('(', ')')[1]));
+                        if(Find(code,"context")) if (assign[2].Split('(', ')').Length >= 2) parametro = (EliminateSpace(code.Split('(', ')')[1]));
+                        if (assign[1].Split('(', ')').Length >= 2) parametro = (EliminateSpace(code.Split('(', ')')[1]));
                         //Funciones directas del context
-                        if (Local_Param_Cards.Contains(parametro) && assign.Length == 4 && EliminateSpace(assign[0]) == "context" && VerificateContextList(EliminateSpace(assign[1]))!= " ") function = ContextFunction(assign, parametro, VerificateContextList(EliminateSpace(assign[1])));
+                        if (Local_Param_Cards.Contains(parametro) && assign.Length == 4 && EliminateSpace(assign[0]) == "context" && (VerificateContextList(assign[1]) != " " || VerificateContextList(Local_Param_Property[assign[1]]) != " ")) function = ContextFunction(assign, parametro, VerificateContextList(EliminateSpace(assign[1])));
                         else if (assign.Length == 4 && EliminateSpace(assign[0]) == "context") function = ContextFunction(assign);
                         //Funciones de una variable que contienen una lista del context
-                        else if (Local_Param_Cards.Contains(parametro) && assign.Length == 3 && Local_Param_List.Contains(EliminateSpace(assign[0]))) function = ContextFunction(assign, parametro,assign[0], 1);
-                        else if (assign.Length == 3 && Local_Param_List.Contains(EliminateSpace(assign[0]))) function = ContextFunction(assign, value: 1);
+                        else if (Local_Param_Cards.Contains(parametro) && assign.Length == 3 && Local_Param_List.ContainsKey(EliminateSpace(assign[0]))) function = ContextFunction(assign, parametro, Local_Param_List[assign[0]], 1);
+                        else if (assign.Length == 3 && Local_Param_List.ContainsKey(EliminateSpace(assign[0]))) function = ContextFunction(assign, value: 1,list: Local_Param_List[assign[0]]);
                         //Funciones de operador doble con un target.Power
-                        if (Ordenes.Contains("for") && assign.Length == 3 && EliminateSpace(assign[0]) == "target" && EliminateSpace(assign[1]) == "Power++") function = "TargetPowerSum|Source";
-                        else if (Ordenes.Contains("for") && assign.Length == 3 && EliminateSpace(assign[0]) == "target" && EliminateSpace(assign[1]) == "Power--") function = "TargetPowerRest|Source";
+                        if (Ordenes.Contains("for") && assign.Length == 3 && EliminateSpace(assign[0]) == "target" && EliminateSpace(assign[1]) == "Power++") function = "TargetPowerSum|Source|";
+                        else if (Ordenes.Contains("for") && assign.Length == 3 && EliminateSpace(assign[0]) == "target" && EliminateSpace(assign[1]) == "Power--") function = "TargetPowerRest|Source|";
+                        else if (Ordenes.Contains("for") && assign.Length == 3 && EliminateSpace(assign[0]) == "target" && assign[1].Contains("Power") && assign[1].Contains("-=")) function = "TargetPowerRestTo|Source|" + assign[1].Split("-=",';')[1];
+                        else if (Ordenes.Contains("for") && assign.Length == 3 && EliminateSpace(assign[0]) == "target" && assign[1].Contains("Power") && assign[1].Contains("+=")) function = "TargetPowerSumTo|Source|" + assign[1].Split("+=",';')[1];
+                        else if (Ordenes.Contains("for") && assign.Length == 3 && EliminateSpace(assign[0]) == "target" && assign[1].Contains("Power") && assign[1].Contains("=")) function = "TargetAssingTo|Source|" + assign[1].Split("=", ';')[1];
                         //Leer instrucciones
                         if (function != " ") Ordenes += function + "-";
-                        else error.Add(new ErrorBack(Nline, ErrorValue.SintaxErrorDeclaration));
                     }
                 }
                 else if (FindEndExpression(code, '}') && Ordenes.Contains("for") && !ActionCierre && !EffectCierre && !ForCierre)
@@ -1084,7 +1140,7 @@ namespace CardCompiler
                 {
                     ActionCierre = true;
                 }
-                else if(FindEndExpression(code, '}') && ActionCierre && ForCierre && !EffectCierre)
+                else if (FindEndExpression(code, '}') && ActionCierre && ForCierre && !EffectCierre)
                 {
                     EffectCierre = true;
                 }
@@ -1096,8 +1152,7 @@ namespace CardCompiler
             {
                 vars += s + "|" + Vars[s] + "^";
             }
-            TextImpress.Add(Ordenes);
-            if(Ordenes != " " && ActionCierre && EffectCierre && ForCierre)
+            if(ActionCierre && EffectCierre && ForCierre)
             {
                 string save = CreateString(Name,Nline) + "&" + vars + "&" + Ordenes;
                 StreamWriter sw = new(Application.dataPath + "/Resources/Effects/" + CreateString(Name,Nline) + ".txt");
@@ -1123,22 +1178,22 @@ namespace CardCompiler
                 string[] ofPlayer = Code.Split('(', ')');
                 if (Find(EliminateSpace(ofPlayer[0]), "DeckOfPlayer"))
                 {
-                    if (EliminateSpace(ofPlayer[1]) == "context.TriggerPlayer") return "Deck";
+                    if (EliminateSpace(ofPlayer[1]) == "context.TriggerPlayer" || EliminateSpace(ofPlayer[1]) == "target.Owner") return "Deck";
                     else if (process.VerifyValidate(EliminateSpace(ofPlayer[1])) == TypeToken.Var) return "Source";
                 }
                 if (Find(EliminateSpace(ofPlayer[0]), "GraveyardOfPlayer"))
                 {
-                    if (EliminateSpace(ofPlayer[1]) == "context.TriggerPlayer") return "Graveyard";
+                    if (EliminateSpace(ofPlayer[1]) == "context.TriggerPlayer" || EliminateSpace(ofPlayer[1]) == "target.Owner") return "Graveyard";
                     else if (process.VerifyValidate(EliminateSpace(ofPlayer[1])) == TypeToken.Var) return "Source";
                 }
                 if (Find(EliminateSpace(ofPlayer[0]), "HandOfPlayer"))
                 {
-                    if (EliminateSpace(ofPlayer[1]) == "context.TriggerPlayer") return "Hand";
+                    if (EliminateSpace(ofPlayer[1]) == "context.TriggerPlayer" || EliminateSpace(ofPlayer[1]) == "target.Owner") return "Hand";
                     else if (process.VerifyValidate(EliminateSpace(ofPlayer[1])) == TypeToken.Var) return "Source";
                 }
                 if (Find(EliminateSpace(ofPlayer[0]), "FieldOfPlayer"))
                 {
-                    if (EliminateSpace(ofPlayer[1]) == "context.TriggerPlayer") return "Field";
+                    if (EliminateSpace(ofPlayer[1]) == "context.TriggerPlayer" || EliminateSpace(ofPlayer[1]) == "target.Owner") return "Field";
                     else if (process.VerifyValidate(EliminateSpace(ofPlayer[1])) == TypeToken.Var) return "Source";
                 }
             }

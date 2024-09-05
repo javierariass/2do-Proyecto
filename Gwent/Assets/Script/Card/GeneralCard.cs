@@ -20,6 +20,8 @@ public class GeneralCard : MonoBehaviour
     public int players;
     public Card Card;
     public bool InEscena = true;
+    private  Sprite CardImag;
+
     private void Start()
     {
         Imag_Des = GameObject.FindGameObjectWithTag("Img_Des").GetComponent<RawImage>();
@@ -29,14 +31,16 @@ public class GeneralCard : MonoBehaviour
 
     private void Update()
     {
-        if(!InEscena)
+        if(players == GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>().Turn || invoke || CardType.Lider == Type) gameObject.GetComponent<SpriteRenderer>().sprite = CardImag;
+        else gameObject.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("Images/Random");
+        if (!InEscena)
         {
             Destroy(gameObject);
         }
         if(invoke && !effects && effect != null)
         {
             GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>().DeterminateContext();
-            effect.Action(GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>().context);
+            effect.Action();
             effects = true;
         }
     }
@@ -60,11 +64,11 @@ public class GeneralCard : MonoBehaviour
 
         if(File.Exists(Application.dataPath + "/Resources/Images/" + Name + ".jpg"))
         {
-            gameObject.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("Images/" + Name);
+            CardImag = Resources.Load<Sprite>("Images/" + Name);
         }
         else
         {
-            gameObject.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("Images/Random");
+           CardImag = Resources.Load<Sprite>("Images/Random");
         }
         gameObject.GetComponent<BoxCollider2D>().isTrigger = true;
         gameObject.GetComponent<BoxCollider2D>().size = new Vector2(9.63649f, 12.67119f);
@@ -72,15 +76,18 @@ public class GeneralCard : MonoBehaviour
 
     private void OnMouseEnter()
     {
-        Imag_Des.transform.localScale = Vector3.one;
-        Text_Des_Img.transform.localScale = Vector3.one;
-        Imag_Des.texture = GetComponent<SpriteRenderer>().sprite.texture;
-        string ataques = "";
-        foreach(AttackType s in Attack)
+        if (players == GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>().Turn || CardType.Lider == Type || invoke)
         {
-            ataques += s.ToString() + " ";
+            Imag_Des.transform.localScale = Vector3.one;
+            Text_Des_Img.transform.localScale = Vector3.one;
+            Imag_Des.texture = GetComponent<SpriteRenderer>().sprite.texture;
+            string ataques = "";
+            foreach (AttackType s in Attack)
+            {
+                ataques += s.ToString() + " ";
+            }
+            Text_Des.text = "Name: " + Name + "\n" + "Type: " + Type + "\n" + "Faction: " + Faction + "\n" + "Power: " + Power + "\n" + "Attack: " + ataques;
         }
-        Text_Des.text = "Name: " + Name + "\n" + "Type: " + Type + "\n" + "Faction: " + Faction + "\n" + "Power: " + Power + "\n" + "Attack: " + ataques;
     }
 
     private void OnMouseExit()
