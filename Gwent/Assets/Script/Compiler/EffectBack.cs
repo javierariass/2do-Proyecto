@@ -77,8 +77,8 @@ namespace CardCompiler
                             whi = parts[1];
                             whileintru = i+1;
                         }
-                        if (parts.Length == 3) DeterminateList(parts[1],GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>().context, parts[0], parts[2]);
-                        else DeterminateList(parts[1], GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>().context, parts[0]);
+                        if (parts.Length >= 3) DeterminateList(parts[1],GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>().context, parts[0], parts[2]);
+                        else DeterminateList(parts[1], GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>().context, parts[0]); 
                         i = instruccion;
                         instruccion++;
                     }
@@ -191,7 +191,6 @@ namespace CardCompiler
                     for (int i = 0; i < list.Count; i++)
                     {
                         instruccion = s;
-                        UnityEngine.Debug.Log(list.Count);
                         while (instruccion < Instruntions.Count)
                         {
                             string[] W = Instruntions[instruccion].Split('|');
@@ -488,6 +487,8 @@ namespace CardCompiler
             int s = 0;
             foreach (GeneralCard card in cards)
             {
+                if (card.players == 1 && GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>().deck1.Graveyard.Contains(card.gameObject)) GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>().deck1.Graveyard.Remove(card.gameObject);
+                if (card.players == 2 && GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>().deck2.Graveyard.Contains(card.gameObject)) GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>().deck2.Graveyard.Remove(card.gameObject);
                 Array[s] = card.gameObject;
                 s++;
             }

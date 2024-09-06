@@ -24,6 +24,7 @@ public class GameManager : MonoBehaviour
     public float Round1,Round2, RoundPower1,RoundPower2;
     public GameObject[] Climas,Climas_Pos = new GameObject[3];
     public bool Jug1_End, Jug2_End,Game_End = false;
+    public bool inicio1, inicio2 = true;
     public Context context;
     public GameObject[] Board = new GameObject[33];
 
@@ -51,7 +52,6 @@ public class GameManager : MonoBehaviour
         deck1.Mazo = new GameObject[Cards.Count];
         deck1.Mazo = Cards.ToArray();
         deck1.Mazo = deck1.Barajear(deck1.Mazo);
-        deck1.Robar(10);
         deck1.Leader = LeaderSelect;
         deck1.Leader.transform.position = deck1.Field_leader.transform.position;
         LeaderSelect = null;
@@ -62,7 +62,6 @@ public class GameManager : MonoBehaviour
         deck2.Mazo = Cards.ToArray();
         Cards.Clear();
         deck2.Mazo = deck2.Barajear(deck2.Mazo);
-        deck2.Robar(10);
         deck2.Leader = LeaderSelect;
         deck2.Leader = LeaderSelect;
         deck2.Leader.transform.position = deck2.Field_leader.transform.position;
@@ -127,7 +126,7 @@ public class GameManager : MonoBehaviour
             Jug2_End = true;
         }
         TextMeshProUGUI text;
-        if(P1.isActiveAndEnabled && !Jug2_End)
+        if(P1.isActiveAndEnabled && !Jug2_End && !inicio1)
         {
             P1.gameObject.SetActive(false);
             P2.gameObject.SetActive(true);
@@ -139,7 +138,7 @@ public class GameManager : MonoBehaviour
                 Climas_Pos[i].GetComponent<Casilla_Invocacion>().Deck = deck2;
             }          
         }
-        else if(P2.isActiveAndEnabled && !Jug1_End)
+        else if(P2.isActiveAndEnabled && !Jug1_End && !inicio2)
         {
 
             P2.gameObject.SetActive(false);
@@ -160,7 +159,7 @@ public class GameManager : MonoBehaviour
             P2Power = text;
 
         }
-        if (!Jug1_End || !Jug2_End)
+        if ((!Jug1_End && !inicio1)|| (!Jug2_End && !inicio2))
         {
             invoke = false;
         }

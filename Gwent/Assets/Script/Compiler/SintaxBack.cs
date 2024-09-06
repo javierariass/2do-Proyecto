@@ -1003,6 +1003,7 @@ namespace CardCompiler
             string[] Action = new string[Code.Length - Nline+1];
             Array.Copy(Code, Nline - 1, Action, 0, Code.Length - Nline+1);
             string Ordenes = "";
+            string function = " ";
             List<string> Local_Param_Cards = new();
             Dictionary<string,string> Local_Param_List = new();
             Dictionary<string,string> Local_Param_Property = new();
@@ -1066,16 +1067,15 @@ namespace CardCompiler
                                 if (EliminateSpace(assing[2]) == "Pop()" && VerificateContextList(assing[1]) != " ")
                                 {
                                     Local_Param_Cards.Add(var);
-                                    Ordenes += "Pop|" + assing[1] + "|" + var + "-";
+                                    function = "Pop|" + assing[1] + "|" + var + "|";
                                 }                               
                             }
-
                             //Asignacion Find
                             if (Find(code, "Find") && Find(code, "(") && Find(code, ")") && Find(code, "unit.") && Find(code, "==") && VerificateContextList(assing[1]) != " ")
                             {
                                 string[] find = code.Split('(', ')');
                                 Local_Param_Cards.Add(var);
-                                Ordenes += "Find|" + assing[1] + "|" + var + "|" + find[1].Split("unit.")[1] + "-";
+                                function = "Find|" + assing[1] + "|" + var + "|" + find[1].Split("unit.")[1];
                             }
                             //Asignacion Pop desde una lista asignada
                             else if (assing.Length == 3 && Local_Param_List.ContainsKey(assing[0]))
@@ -1083,21 +1083,31 @@ namespace CardCompiler
                                 if (EliminateSpace(assing[1]) == "Pop()" && Local_Param_List.ContainsKey(assing[0]))
                                 {
                                     Local_Param_Cards.Add(var);
-                                    Ordenes += "Pop|" + Local_Param_List[assing[1]] + "|" + var + "-";
+                                    function = "Pop|" + Local_Param_List[assing[1]] + "|" + var + "|";
                                 }
                                 if (Find(code, "Find") && Find(code, "(") && Find(code, ")") && Find(code, "unit.") && Find(code, "==") && Local_Param_List.ContainsKey(EliminateSpace(assing[0])))
                                 {
                                     string[] find = code.Split('(', ')');
                                     Local_Param_Cards.Add(var);
-                                    Ordenes += "Find|" + assing[1] + "|" + var + "|" + find[1].Split("unit.")[1] + "-";
+                                    function = "Find|" + assing[1] + "|" + var + "|" + find[1].Split("unit.")[1];
                                 }
                             }
                             //Asignacion de una lista
-                            else if (assing.Length == 3 && (VerificateContextList(assing[1]) != " " || VerificateContextList(Local_Param_Property[assing[1]]) != " "))
+                            else if (assing.Length > 3 && (VerificateContextList(assing[1] + "." + assing[2]) != " " || (Local_Param_Property.ContainsKey(assing[1] + "." + assing[2]) && VerificateContextList(Local_Param_Property[assing[1] + "." + assing[2]]) != " ")))
                             {
                                 //Definir Assignacion
-                                Local_Param_List[var] = assing[1];
-                                Ordenes += "ListAdd|" + VerificateContextList(assing[1]) + "|" + var + "-";
+                                if (Local_Param_Property.ContainsKey(assing[1] + "." + assing[2])) Local_Param_List[var] = VerificateContextList(Local_Param_Property[assing[1] + "." + assing[2]]);
+                                else Local_Param_List[var] = VerificateContextList(assing[1] + "." + assing[2]);
+                                function = "ListAdd|Source";
+
+                            }
+                            //Asignacion de una lista sin context.TriggerPlayer
+                            else if (assing.Length == 3 && (VerificateContextList(assing[1]) != " " || (Local_Param_Property.ContainsKey(assing[1] + assing[2]) && VerificateContextList(Local_Param_Property[assing[1]]) != " ")))
+                            {
+                                //Definir Assignacion
+                                if (Local_Param_Property.ContainsKey(assing[1])) Local_Param_List[var] = VerificateContextList(Local_Param_Property[assing[1]]);
+                                else Local_Param_List[var] = VerificateContextList(assing[1]);
+                                function = "ListAdd|Source";
                             }
                             //Asignacion de alguna propiedad target
                             else if (assing.Length == 3 && EliminateSpace(assing[1]) == "Owner" && EliminateSpace(assing[0]) == "target" && Ordenes.Contains("for"))
@@ -1112,7 +1122,6 @@ namespace CardCompiler
                     if ((Find(code, "(") && Find(code, ")") || Find(code, "++") || Find(code, "--") || Find(code, "-=") || Find(code, "+=") || Find(code, "=")) && Find(code, ".") && FindEndExpression(code,';'))
                     {
                         string[] assign = code.Split('.', ';');
-                        string function = " ";
                         string parametro = "";
                         if(Find(code,"context")) if (assign[2].Split('(', ')').Length >= 2) parametro = (EliminateSpace(code.Split('(', ')')[1]));
                         if (assign[1].Split('(', ')').Length >= 2) parametro = (EliminateSpace(code.Split('(', ')')[1]));
@@ -1127,11 +1136,18 @@ namespace CardCompiler
                         else if (Ordenes.Contains("for") && assign.Length == 3 && EliminateSpace(assign[0]) == "target" && EliminateSpace(assign[1]) == "Power--") function = "TargetPowerRest|Source|";
                         else if (Ordenes.Contains("for") && assign.Length == 3 && EliminateSpace(assign[0]) == "target" && assign[1].Contains("Power") && assign[1].Contains("-=")) function = "TargetPowerRestTo|Source|" + assign[1].Split("-=",';')[1];
                         else if (Ordenes.Contains("for") && assign.Length == 3 && EliminateSpace(assign[0]) == "target" && assign[1].Contains("Power") && assign[1].Contains("+=")) function = "TargetPowerSumTo|Source|" + assign[1].Split("+=",';')[1];
-                        else if (Ordenes.Contains("for") && assign.Length == 3 && EliminateSpace(assign[0]) == "target" && assign[1].Contains("Power") && assign[1].Contains("=")) function = "TargetAssingTo|Source|" + assign[1].Split("=", ';')[1];
-                        //Leer instrucciones
-                        if (function != " ") Ordenes += function + "-";
+                        else if (Ordenes.Contains("for") && assign.Length == 3 && EliminateSpace(assign[0]) == "target" && assign[1].Contains("Power") && assign[1].Contains("=")) function = "TargetAssingTo|Source|" + assign[1].Split("=", ';')[1];                       
                     }
+
+                    if (function != " ")
+                    {
+                        Ordenes += function + "-";
+                        function = " ";
+                    }
+                    else if (function == " ") error.Add(new ErrorBack(Nline, ErrorValue.SintaxErrorDeclaration));
+
                 }
+                //Leer instrucciones
                 else if (FindEndExpression(code, '}') && Ordenes.Contains("for") && !ActionCierre && !EffectCierre && !ForCierre)
                 {
                     ForCierre = true;
@@ -1146,7 +1162,7 @@ namespace CardCompiler
                 }
                 Nline++;
             }
-
+            TextImpress.Add(Ordenes);
             string vars = "";
             foreach (string s in Vars.Keys)
             {

@@ -18,7 +18,7 @@ public class Deck : MonoBehaviour
     public GameObject Card_Invoke;
     public GameObject Leader;
 
-    private int carta_actual_deck = 0;
+    public int carta_actual_deck = 0;
 
     private void Update()
     {

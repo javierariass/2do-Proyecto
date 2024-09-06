@@ -20,7 +20,7 @@ public class GeneralCard : MonoBehaviour
     public int players;
     public Card Card;
     public bool InEscena = true;
-    private  Sprite CardImag;
+    public  Sprite CardImag;
 
     private void Start()
     {
@@ -33,10 +33,6 @@ public class GeneralCard : MonoBehaviour
     {
         if(players == GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>().Turn || invoke || CardType.Lider == Type) gameObject.GetComponent<SpriteRenderer>().sprite = CardImag;
         else gameObject.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("Images/Random");
-        if (!InEscena)
-        {
-            Destroy(gameObject);
-        }
         if(invoke && !effects && effect != null)
         {
             GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>().DeterminateContext();

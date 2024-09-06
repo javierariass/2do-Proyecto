@@ -230,10 +230,10 @@ MonoBehaviour:
     m_SaveData: []
   m_SceneHierarchy:
     m_TreeViewState:
-      scrollPos: {x: 0, y: 149}
-      m_SelectedIDs: f46b0000
-      m_LastClickedID: 27636
-      m_ExpandedIDs: 20fbffffc06a00000c6b0000c46b0000866c0000ac6c0000e66c0000166d0000226d0000
+      scrollPos: {x: 0, y: 85}
+      m_SelectedIDs: 84f1ffffd8eaffff0eeaffff62e9ffffc0e8fffff2e7fffff0e7ffffeee7ffffece7ffffeae7ffffe6d1ffff
+      m_LastClickedID: -11802
+      m_ExpandedIDs: e6d1ffff0cdefffff8f1ffff28fbffffa06b0000a46b0000de6c00000e6d00009e6d0000
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
@@ -575,9 +575,9 @@ MonoBehaviour:
   m_PlayAudio: 0
   m_AudioPlay: 0
   m_Position:
-    m_Target: {x: -0.18526477, y: -0.2648754, z: 0.0133895995}
+    m_Target: {x: 940.51904, y: 433.74036, z: 3.7367978}
     speed: 2
-    m_Value: {x: -0.18526477, y: -0.2648754, z: 0.0133895995}
+    m_Value: {x: 940.51904, y: 433.74036, z: 3.7367978}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -627,9 +627,9 @@ MonoBehaviour:
     speed: 2
     m_Value: {x: 0, y: 0, z: 0, w: 1}
   m_Size:
-    m_Target: 4.269343
+    m_Target: 727.77405
     speed: 2
-    m_Value: 4.269343
+    m_Value: 727.77405
   m_Ortho:
     m_Target: 1
     speed: 2
@@ -722,22 +722,22 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/Resources/Effects
+    - Assets/Script/Control del juego
     m_Globs: []
     m_OriginalText: 
   m_ViewMode: 1
   m_StartGridSize: 96
   m_LastFolders:
-  - Assets/Resources/Effects
+  - Assets/Script/Control del juego
   m_LastFoldersGridSize: 96
   m_LastProjectPath: C:\Users\Javier\Documents\Programacion\2do Proyecto\Gwent
   m_LockTracker:
     m_IsLocked: 0
   m_FolderTreeState:
     scrollPos: {x: 0, y: 87}
-    m_SelectedIDs: e0700000
-    m_LastClickedID: 28896
-    m_ExpandedIDs: 00000000ce700000d0700000d2700000d470000000ca9a3bffffff7f
+    m_SelectedIDs: f2700000
+    m_LastClickedID: 28914
+    m_ExpandedIDs: 00000000c6700000c8700000ca700000cc70000000ca9a3bffffff7f
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -765,7 +765,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: 00000000ce700000d0700000d2700000d4700000
+    m_ExpandedIDs: 00000000c6700000c8700000ca700000cc700000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -790,8 +790,8 @@ MonoBehaviour:
       m_Icon: {fileID: 0}
       m_ResourceFile: 
   m_ListAreaState:
-    m_SelectedInstanceIDs: 1a6f0000
-    m_LastClickedInstanceID: 28442
+    m_SelectedInstanceIDs: ec6b0000
+    m_LastClickedInstanceID: 27628
     m_HadKeyboardFocusLastEvent: 1
     m_ExpandedInstanceIDs: c6230000528a0000146d0000d83400009634000022340000
     m_RenameOverlay:

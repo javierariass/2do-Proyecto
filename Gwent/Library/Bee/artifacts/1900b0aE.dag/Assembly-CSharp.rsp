@@ -400,6 +400,8 @@
 "Assets/Script/Control del juego/DeckEditor.cs"
 "Assets/Script/Control del juego/GameManager.cs"
 "Assets/Script/Control del juego/SceneControl.cs"
+"Assets/Script/Control del juego/Start_Game.cs"
+"Assets/Script/Control del juego/Trash_Card.cs"
 "Assets/Script/Juego/Casilla_Invocacion.cs"
 "Assets/Script/Juego/Deck.cs"
 -langversion:9.0
